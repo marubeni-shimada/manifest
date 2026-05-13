@@ -45,25 +45,23 @@
   .submit:active { transform: scale(0.99); }
   .submit:disabled { opacity: 0.6; }
   
-  /* チップ + 数量カード(契約フォーム) */
   .waste-box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; padding: 10px; }
-  .waste-card { background: white; border: 1px solid #E2E8F0; border-radius: 7px; padding: 9px 11px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
-  .waste-card-name { flex: 1; font-size: 12px; color: #0E7490; font-weight: 600; }
-  .waste-card-remove { color: #94A3B8; font-size: 16px; cursor: pointer; padding: 0 4px; }
+  .waste-card { background: white; border: 1px solid #E2E8F0; border-radius: 7px; padding: 9px 11px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .waste-card-name { flex: 1 1 100%; font-size: 12px; color: #0E7490; font-weight: 600; margin-bottom: 4px; }
+  .waste-card-remove { color: #94A3B8; font-size: 16px; cursor: pointer; padding: 0 4px; flex-shrink: 0; }
   .waste-card input { width: 80px; padding: 7px 9px; font-size: 13px; }
+  .waste-card select { width: 70px; padding: 7px; font-size: 13px; }
   .waste-empty { color: #94A3B8; font-size: 12px; padding: 8px 4px; text-align: center; }
   .waste-divider { border-top: 1px solid #E2E8F0; margin: 8px 0; padding-top: 8px; font-size: 10px; color: #64748B; font-weight: 600; }
   .waste-add-row { display: flex; flex-wrap: wrap; gap: 5px; }
   .waste-add-chip { background: white; border: 1px solid #CBD5E1; color: #475569; padding: 5px 10px; border-radius: 999px; font-size: 12px; cursor: pointer; }
   .waste-add-chip:active { background: #F1F5F9; }
   
-  /* 業者選択ピッカー */
   .picker-btn { width: 100%; background: white; border: 1px solid #CBD5E1; border-radius: 9px; padding: 11px 13px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; color: #94A3B8; }
   .picker-btn.has-value { background: #ECFEFF; border: 1.5px solid #0F766E; color: #0E7490; font-weight: 500; }
   .picker-btn .icon { color: #94A3B8; font-size: 14px; }
   .picker-btn.has-value .icon { color: #0F766E; font-size: 12px; font-weight: 600; }
   
-  /* モーダル */
   .modal { display: none; position: fixed; inset: 0; background: white; z-index: 100; flex-direction: column; }
   .modal.active { display: flex; }
   .modal-header { padding: 14px 16px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
@@ -79,7 +77,6 @@
   .modal-item:active { background: #F1F5F9; }
   .modal-empty { padding: 30px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   
-  /* 申請フォームの契約情報表示 */
   .info-box { background: #ECFEFF; border: 1px solid #A5F3FC; border-radius: 9px; padding: 10px 12px; margin-top: 8px; }
   .info-row { display: flex; gap: 8px; font-size: 12px; margin-bottom: 4px; }
   .info-row:last-child { margin-bottom: 0; }
@@ -197,6 +194,18 @@
       <label>契約開始希望日</label>
       <input id="c_startDate" type="date">
     </div>
+    
+    <div class="row2">
+      <div class="field">
+        <label>委託期間 開始日</label>
+        <input id="c_periodStart" type="date">
+      </div>
+      <div class="field">
+        <label>委託期間 終了日</label>
+        <input id="c_periodEnd" type="date">
+      </div>
+    </div>
+    
     <div class="field">
       <label>備考</label>
       <textarea id="c_note"></textarea>
@@ -264,7 +273,7 @@ let userProfile = null;
 let myContracts = [];
 let wasteList = [];
 
-// 契約フォーム用:選んだ廃棄物 [{name, quantity}]
+// 契約フォーム用:選んだ廃棄物 [{name, quantity, unit}]
 let contractWastes = [];
 
 let allTransporters = [];
@@ -301,11 +310,9 @@ function showPage(name) {
   window.scrollTo(0, 0);
 }
 
-// ===== 契約フォームを開く =====
 async function openContractForm() {
   showPage('contract');
   contractWastes = [];
-  
   try {
     const [vRes, wRes] = await Promise.all([
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getVendors' }) }),
@@ -315,12 +322,9 @@ async function openContractForm() {
     const wData = await wRes.json();
     if (vData.ok) { allTransporters = vData.transporters; allDisposers = vData.disposers; }
     if (wData.ok) { wasteList = wData.wastes; renderContractWastes(); }
-  } catch (e) {
-    console.error(e);
-  }
+  } catch (e) { console.error(e); }
 }
 
-// ===== 契約フォームの廃棄物UI =====
 function renderContractWastes() {
   const selectedEl = document.getElementById('c_wasteSelected');
   const availableEl = document.getElementById('c_wasteAvailable');
@@ -332,6 +336,10 @@ function renderContractWastes() {
       <div class="waste-card">
         <div class="waste-card-name">📦 ${escapeHtml(w.name)}</div>
         <input type="number" inputmode="decimal" placeholder="数量" value="${w.quantity || ''}" oninput="updateContractWasteQty(${i}, this.value)">
+        <select onchange="updateContractWasteUnit(${i}, this.value)">
+          <option value="t" ${w.unit === 't' ? 'selected' : ''}>t</option>
+          <option value="m³" ${w.unit === 'm³' ? 'selected' : ''}>m³</option>
+        </select>
         <span class="waste-card-remove" onclick="removeContractWaste(${i})">✕</span>
       </div>
     `).join('');
@@ -349,7 +357,7 @@ function renderContractWastes() {
 
 function addContractWaste(name) {
   if (!contractWastes.some(w => w.name === name)) {
-    contractWastes.push({ name: name, quantity: '' });
+    contractWastes.push({ name: name, quantity: '', unit: 't' });
     renderContractWastes();
   }
 }
@@ -363,7 +371,10 @@ function updateContractWasteQty(index, value) {
   contractWastes[index].quantity = value;
 }
 
-// ===== 業者選択モーダル =====
+function updateContractWasteUnit(index, value) {
+  contractWastes[index].unit = value;
+}
+
 function openVendorPicker(type) {
   currentPickerType = type;
   document.getElementById('vendorModalTitle').textContent = 
@@ -405,17 +416,14 @@ function selectVendor(id, name) {
   closeVendorPicker();
 }
 
-// ===== 契約フォーム送信 =====
 async function submitContract() {
   const transId = val('c_transporterId');
   const dispId = val('c_disposerId');
-  
   if (!transId || !dispId) { alert('収集運搬業者と処分業者を選択してください'); return; }
   
-  // 廃棄物と数量を文字列化
   const wastesStr = contractWastes
     .filter(w => w.name)
-    .map(w => `${w.name}:${w.quantity || ''}`)
+    .map(w => `${w.name}:${w.quantity || ''}${w.unit || ''}`)
     .join(', ');
   
   const payload = {
@@ -432,6 +440,8 @@ async function submitContract() {
     disposerName: val('c_disposerName'),
     wastes: wastesStr,
     startDate: val('c_startDate'),
+    periodStart: val('c_periodStart'),
+    periodEnd: val('c_periodEnd'),
     note: val('c_note')
   };
   
@@ -462,7 +472,7 @@ async function submitContract() {
 function val(id) { return document.getElementById(id).value.trim(); }
 
 function clearContractForm() {
-  ['c_projectName','c_person','c_contact','c_startDate','c_note']
+  ['c_projectName','c_person','c_contact','c_startDate','c_periodStart','c_periodEnd','c_note']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('c_company').value = '株式会社丸紅';
   ['c_transporterId','c_transporterName','c_disposerId','c_disposerName']
@@ -477,7 +487,6 @@ function clearContractForm() {
   renderContractWastes();
 }
 
-// ===== 申請フォーム =====
 async function openApplyForm() {
   showPage('apply');
   document.getElementById('a_contract').innerHTML = '<option value="">先に工事を選んでください</option>';
@@ -507,12 +516,10 @@ function onProjectChange() {
   const projectName = val('a_project');
   const select = document.getElementById('a_contract');
   document.getElementById('a_contractInfo').innerHTML = '';
-  
   if (!projectName) {
     select.innerHTML = '<option value="">先に工事を選んでください</option>';
     return;
   }
-  
   const filtered = myContracts.filter(c => c.projectName === projectName);
   let options = '<option value="">選択してください</option>';
   options += filtered.map(c => 
@@ -525,16 +532,13 @@ function onProjectChange() {
 function onContractChange() {
   const contractId = val('a_contract');
   const infoEl = document.getElementById('a_contractInfo');
-  
   if (!contractId) { infoEl.innerHTML = ''; return; }
-  
   if (contractId === 'EMPTY') {
     infoEl.innerHTML = `<div class="info-box">
       <div class="info-row"><span class="info-label">区分</span><span class="info-value">空車依頼</span></div>
     </div>`;
     return;
   }
-  
   const c = myContracts.find(c => c.id === contractId);
   if (c) {
     infoEl.innerHTML = `<div class="info-box">
@@ -548,7 +552,6 @@ async function submitApply() {
   const projectName = val('a_project');
   const contractId = val('a_contract');
   const count = val('a_count');
-  
   if (!projectName) { alert('工事を選択してください'); return; }
   if (!contractId) { alert('契約を選択してください'); return; }
   if (!count) { alert('枚数を入力してください'); return; }
