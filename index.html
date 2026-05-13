@@ -12,27 +12,22 @@
   .page { display: none; min-height: 100vh; }
   .page.active { display: block; }
   
-  /* ヘッダー */
   .header { background: linear-gradient(135deg, #0F766E 0%, #0E7490 100%); color: white; padding: 18px 18px 24px; display: flex; align-items: center; gap: 10px; }
   .header .eyebrow { font-size: 10px; opacity: 0.85; letter-spacing: 1px; margin-bottom: 2px; font-weight: 500; }
   .header h1 { font-size: 17px; margin: 0; font-weight: 600; letter-spacing: 0.3px; }
   .back-btn { width: 32px; height: 32px; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 20px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0; }
   
-  /* コンテンツエリア */
   .content { padding: 16px; padding-bottom: 60px; }
   
-  /* ユーザーバッジ */
   .user-card { background: linear-gradient(135deg, #ECFEFF 0%, #F0FDFA 100%); border: 1px solid #A5F3FC; padding: 12px 14px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
   .user-avatar { width: 36px; height: 36px; background: #0F766E; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
   .user-info-label { font-size: 10px; color: #0E7490; font-weight: 600; letter-spacing: 0.5px; }
   .user-info-name { font-size: 14px; font-weight: 600; color: #134E4A; }
   
-  /* セクションタイトル */
   .section-title { font-size: 11px; color: #64748B; font-weight: 700; letter-spacing: 1.2px; margin: 0 0 12px; text-transform: uppercase; }
   
-  /* メインボタン */
-  .menu-btn { width: 100%; background: white; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px; text-align: left; margin-bottom: 12px; cursor: pointer; box-shadow: 0 1px 3px rgba(15,23,42,0.04); transition: transform 0.1s, box-shadow 0.1s; }
-  .menu-btn:active { transform: scale(0.98); box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
+  .menu-btn { width: 100%; background: white; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px; text-align: left; margin-bottom: 12px; cursor: pointer; box-shadow: 0 1px 3px rgba(15,23,42,0.04); }
+  .menu-btn:active { transform: scale(0.98); }
   .menu-btn .icon-box { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-size: 20px; }
   .icon-green { background: linear-gradient(135deg, #06C755 0%, #0F766E 100%); }
   .icon-blue { background: linear-gradient(135deg, #0EA5E9 0%, #0E7490 100%); }
@@ -41,14 +36,12 @@
   .menu-btn .desc { font-size: 11px; color: #64748B; margin-top: 3px; }
   .menu-btn .arrow { color: #94A3B8; font-size: 20px; }
   
-  /* セカンダリボタン */
   .divider { border-top: 1px solid #E2E8F0; margin: 20px 0 16px; }
   .sub-btn { width: 100%; background: white; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; margin-bottom: 8px; text-align: left; }
   .sub-btn:active { background: #F8FAFC; }
   .sub-btn .icon { font-size: 18px; }
   .sub-btn .label { flex: 1; font-size: 13px; color: #334155; font-weight: 500; }
   
-  /* フォーム */
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 6px; letter-spacing: 0.5px; }
   .req { color: #DC2626; font-size: 8px; vertical-align: middle; }
@@ -56,18 +49,22 @@
   input:focus, textarea:focus, select:focus { outline: none; border-color: #0F766E; box-shadow: 0 0 0 3px rgba(15,118,110,0.12); }
   textarea { min-height: 75px; resize: vertical; }
   
-  /* 横並び2カラム */
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   
-  /* 送信ボタン */
   .submit { width: 100%; padding: 14px; background: linear-gradient(135deg, #06C755 0%, #0F766E 100%); color: white; border: none; border-radius: 11px; font-size: 15px; font-weight: 600; margin-top: 22px; cursor: pointer; box-shadow: 0 3px 10px rgba(15,118,110,0.25); letter-spacing: 0.5px; }
   .submit:active { transform: scale(0.99); }
   .submit:disabled { opacity: 0.6; }
   
-  /* セグメントコントロール(筋の有無のような少数選択肢) */
-  .segment { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; background: #F1F5F9; padding: 4px; border-radius: 9px; }
-  .segment-item { padding: 9px 8px; text-align: center; font-size: 12px; color: #64748B; border-radius: 6px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
-  .segment-item.active { background: white; color: #0E7490; font-weight: 600; box-shadow: 0 1px 3px rgba(15,23,42,0.1); }
+  /* チップ(廃棄物複数選択) */
+  .chip-box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; padding: 10px; }
+  .chip-selected { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; margin-bottom: 8px; }
+  .chip-empty { color: #94A3B8; font-size: 12px; padding: 4px; }
+  .chip-active { background: #0F766E; color: white; padding: 5px 10px; border-radius: 999px; font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+  .chip-active:active { opacity: 0.8; }
+  .chip-divider { border-top: 1px solid #E2E8F0; margin: 8px 0; padding-top: 8px; font-size: 10px; color: #64748B; font-weight: 600; }
+  .chip-available { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip-add { background: white; border: 1px solid #CBD5E1; color: #475569; padding: 5px 10px; border-radius: 999px; font-size: 12px; cursor: pointer; }
+  .chip-add:active { background: #F1F5F9; }
 </style>
 </head>
 <body>
@@ -92,7 +89,7 @@
     
     <div class="section-title">新規で依頼する</div>
     
-    <button class="menu-btn" onclick="showPage('contract')">
+    <button class="menu-btn" onclick="openContractForm()">
       <div class="icon-box icon-green">📄</div>
       <div class="text">
         <div class="title">新規契約の依頼</div>
@@ -144,7 +141,7 @@
     
     <div class="field">
       <label>排出事業者名 <span class="req">●</span></label>
-      <input id="c_company" type="text" placeholder="例:株式会社〇〇建設">
+      <input id="c_company" type="text" value="株式会社丸紅">
     </div>
     
     <div class="row2">
@@ -159,19 +156,22 @@
     </div>
     
     <div class="field">
-      <label>廃棄物種類</label>
-      <input id="c_wasteType" type="text" placeholder="例:がれき類、木くず">
+      <label>収集運搬業者 <span class="req">●</span></label>
+      <select id="c_transporter">
+        <option value="">読み込み中...</option>
+      </select>
     </div>
     
-    <div class="row2">
-      <div class="field">
-        <label>予定数量</label>
-        <input id="c_quantity" type="text" placeholder="例:月10t">
-      </div>
-      <div class="field">
-        <label>契約開始希望日</label>
-        <input id="c_startDate" type="date">
-      </div>
+    <div class="field">
+      <label>処分業者 <span class="req">●</span></label>
+      <select id="c_disposer">
+        <option value="">読み込み中...</option>
+      </select>
+    </div>
+    
+    <div class="field">
+      <label>契約開始希望日</label>
+      <input id="c_startDate" type="date">
     </div>
     
     <div class="field">
@@ -196,33 +196,27 @@
   <div class="content">
     <div class="field">
       <label>工事名 <span class="req">●</span></label>
-      <select id="a_project">
+      <select id="a_project" onchange="onProjectChange()">
         <option value="">読み込み中...</option>
       </select>
     </div>
     
     <div class="field">
-      <label>廃棄物の種類 <span class="req">●</span></label>
-      <select id="a_wasteType">
-        <option value="">選択してください</option>
-        <option>がれき類</option>
-        <option>木くず</option>
-        <option>廃プラスチック類</option>
-        <option>金属くず</option>
-        <option>ガラスくず・陶磁器くず</option>
-        <option>混合廃棄物</option>
-        <option>その他</option>
+      <label>契約(業者の組み合わせ) <span class="req">●</span></label>
+      <select id="a_contract">
+        <option value="">先に工事を選んでください</option>
       </select>
     </div>
     
     <div class="field">
-      <label>筋の有無</label>
-      <div class="segment" id="a_rebarSegment">
-        <div class="segment-item active" data-value="該当なし">該当なし</div>
-        <div class="segment-item" data-value="有筋">有筋</div>
-        <div class="segment-item" data-value="無筋">無筋</div>
+      <label>廃棄物の種類(複数選択)</label>
+      <div class="chip-box">
+        <div class="chip-selected" id="a_wasteSelected">
+          <span class="chip-empty">タップして追加してください</span>
+        </div>
+        <div class="chip-divider">追加できる種類</div>
+        <div class="chip-available" id="a_wasteAvailable">読み込み中...</div>
       </div>
-      <input type="hidden" id="a_rebar" value="該当なし">
     </div>
     
     <div class="row2">
@@ -234,16 +228,6 @@
         <label>排出予定日 <span class="req">●</span></label>
         <input id="a_dischargeDate" type="date">
       </div>
-    </div>
-    
-    <div class="field">
-      <label>収集運搬業者</label>
-      <input id="a_transporter" type="text">
-    </div>
-    
-    <div class="field">
-      <label>処分業者</label>
-      <input id="a_disposer" type="text">
     </div>
     
     <div class="field">
@@ -261,6 +245,9 @@ const LIFF_ID = '2009834318-xkka6j2s';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02rDkgXBj2B6289YMhmi7C9lXCKEIbrfXNGW3AU6Qe7L2_jPg/exec';
 
 let userProfile = null;
+let myContracts = [];      // 自分の契約一覧(申請フォームで使用)
+let wasteList = [];        // 廃棄物マスタ
+let selectedWastes = [];   // 申請フォームで選択中の廃棄物
 
 // ===== LIFF初期化 =====
 async function init() {
@@ -304,17 +291,44 @@ function showPage(name) {
   window.scrollTo(0, 0);
 }
 
-// ===== セグメントコントロール(筋の有無)=====
-document.querySelectorAll('#a_rebarSegment .segment-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('#a_rebarSegment .segment-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    document.getElementById('a_rebar').value = item.dataset.value;
-  });
-});
+// ===== 契約フォームを開く(業者プルダウン読み込み)=====
+async function openContractForm() {
+  showPage('contract');
+  const trans = document.getElementById('c_transporter');
+  const disp = document.getElementById('c_disposer');
+  trans.innerHTML = '<option value="">読み込み中...</option>';
+  disp.innerHTML = '<option value="">読み込み中...</option>';
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getVendors' })
+    });
+    const data = await res.json();
+    
+    if (data.ok) {
+      trans.innerHTML = '<option value="">選択してください</option>' +
+        data.transporters.map(v => `<option value="${v.id}|${v.name}">${v.name}</option>`).join('');
+      disp.innerHTML = '<option value="">選択してください</option>' +
+        data.disposers.map(v => `<option value="${v.id}|${v.name}">${v.name}</option>`).join('');
+    }
+  } catch (e) {
+    trans.innerHTML = '<option value="">読み込みエラー</option>';
+    disp.innerHTML = '<option value="">読み込みエラー</option>';
+  }
+}
 
 // ===== 契約フォーム送信 =====
 async function submitContract() {
+  const transValue = val('c_transporter');
+  const dispValue = val('c_disposer');
+  if (!transValue || !dispValue) {
+    alert('収集運搬業者と処分業者を選択してください');
+    return;
+  }
+  const [transId, transName] = transValue.split('|');
+  const [dispId, dispName] = dispValue.split('|');
+  
   const payload = {
     action: 'submitContract',
     applicantName: userProfile ? userProfile.displayName : '不明',
@@ -323,8 +337,10 @@ async function submitContract() {
     company: val('c_company'),
     person: val('c_person'),
     contact: val('c_contact'),
-    wasteType: val('c_wasteType'),
-    quantity: val('c_quantity'),
+    transporterId: transId,
+    transporterName: transName,
+    disposerId: dispId,
+    disposerName: dispName,
     startDate: val('c_startDate'),
     note: val('c_note')
   };
@@ -361,45 +377,128 @@ async function submitContract() {
 function val(id) { return document.getElementById(id).value.trim(); }
 
 function clearContractForm() {
-  ['c_projectName','c_company','c_person','c_contact','c_wasteType','c_quantity','c_startDate','c_note']
+  ['c_projectName','c_person','c_contact','c_startDate','c_note']
     .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('c_company').value = '株式会社丸紅';
+  document.getElementById('c_transporter').selectedIndex = 0;
+  document.getElementById('c_disposer').selectedIndex = 0;
 }
 
 // ===== 申請フォームを開く =====
 async function openApplyForm() {
   showPage('apply');
-  const select = document.getElementById('a_project');
-  select.innerHTML = '<option value="">読み込み中...</option>';
+  selectedWastes = [];
+  document.getElementById('a_contract').innerHTML = '<option value="">先に工事を選んでください</option>';
   
+  // 契約一覧と廃棄物マスタを並列で取得
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'getMyContracts',
-        userId: userProfile ? userProfile.userId : ''
+    const [contractsRes, wastesRes] = await Promise.all([
+      fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'getMyContracts',
+          userId: userProfile ? userProfile.userId : ''
+        })
+      }),
+      fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getWastes' })
       })
-    });
-    const data = await res.json();
+    ]);
+    const contractsData = await contractsRes.json();
+    const wastesData = await wastesRes.json();
     
-    if (data.ok && data.contracts.length > 0) {
-      select.innerHTML = '<option value="">選択してください</option>' +
-        data.contracts.map(c => `<option value="${c.id}|${c.projectName}">${c.projectName}</option>`).join('');
-    } else {
-      select.innerHTML = '<option value="">契約済みの工事がありません</option>';
+    // 工事プルダウン(重複なし)を作成
+    if (contractsData.ok) {
+      myContracts = contractsData.contracts;
+      const uniqueProjects = [...new Set(myContracts.map(c => c.projectName))];
+      const select = document.getElementById('a_project');
+      if (uniqueProjects.length > 0) {
+        select.innerHTML = '<option value="">選択してください</option>' +
+          uniqueProjects.map(p => `<option value="${p}">${p}</option>`).join('');
+      } else {
+        select.innerHTML = '<option value="">契約済みの工事がありません</option>';
+      }
+    }
+    
+    // 廃棄物チップを準備
+    if (wastesData.ok) {
+      wasteList = wastesData.wastes;
+      renderWasteChips();
     }
   } catch (e) {
-    select.innerHTML = '<option value="">読み込みエラー</option>';
+    console.error(e);
   }
+}
+
+// ===== 工事が変わったら契約プルダウンを更新 =====
+function onProjectChange() {
+  const projectName = val('a_project');
+  const select = document.getElementById('a_contract');
+  
+  if (!projectName) {
+    select.innerHTML = '<option value="">先に工事を選んでください</option>';
+    return;
+  }
+  
+  const filtered = myContracts.filter(c => c.projectName === projectName);
+  if (filtered.length === 0) {
+    select.innerHTML = '<option value="">この工事の契約がありません</option>';
+    return;
+  }
+  
+  select.innerHTML = '<option value="">選択してください</option>' +
+    filtered.map(c => `<option value="${c.id}">${c.transporterName} → ${c.disposerName}</option>`).join('');
+}
+
+// ===== 廃棄物チップの描画 =====
+function renderWasteChips() {
+  const selectedEl = document.getElementById('a_wasteSelected');
+  const availableEl = document.getElementById('a_wasteAvailable');
+  
+  // 選択済み
+  if (selectedWastes.length === 0) {
+    selectedEl.innerHTML = '<span class="chip-empty">タップして追加してください</span>';
+  } else {
+    selectedEl.innerHTML = selectedWastes.map(w => 
+      `<span class="chip-active" onclick="removeWaste('${escapeAttr(w)}')">${w} <span style="opacity:0.7;">×</span></span>`
+    ).join('');
+  }
+  
+  // 追加可能(まだ選択されていないもの)
+  const available = wasteList.filter(w => !selectedWastes.includes(w.name));
+  if (available.length === 0) {
+    availableEl.innerHTML = '<span class="chip-empty">すべて選択済み</span>';
+  } else {
+    availableEl.innerHTML = available.map(w => 
+      `<span class="chip-add" onclick="addWaste('${escapeAttr(w.name)}')">+ ${w.name}</span>`
+    ).join('');
+  }
+}
+
+function addWaste(name) {
+  if (!selectedWastes.includes(name)) {
+    selectedWastes.push(name);
+    renderWasteChips();
+  }
+}
+
+function removeWaste(name) {
+  selectedWastes = selectedWastes.filter(w => w !== name);
+  renderWasteChips();
+}
+
+function escapeAttr(s) {
+  return String(s).replace(/'/g, "\\'");
 }
 
 // ===== 申請フォーム送信 =====
 async function submitApply() {
-  const projectValue = val('a_project');
-  if (!projectValue) {
-    alert('工事を選択してください');
-    return;
-  }
-  const [contractId, projectName] = projectValue.split('|');
+  const projectName = val('a_project');
+  const contractId = val('a_contract');
+  
+  if (!projectName) { alert('工事を選択してください'); return; }
+  if (!contractId) { alert('契約を選択してください'); return; }
   
   const payload = {
     action: 'submitApply',
@@ -407,16 +506,13 @@ async function submitApply() {
     userId: userProfile ? userProfile.userId : '',
     contractId: contractId,
     projectName: projectName,
-    wasteType: val('a_wasteType'),
-    rebar: val('a_rebar'),
+    wasteTypes: selectedWastes.join(', '),
     quantity: val('a_quantity'),
     dischargeDate: val('a_dischargeDate'),
-    transporter: val('a_transporter'),
-    disposer: val('a_disposer'),
     note: val('a_note')
   };
   
-  if (!payload.wasteType || !payload.quantity || !payload.dischargeDate) {
+  if (!payload.quantity || !payload.dischargeDate) {
     alert('必須項目(●)を入力してください');
     return;
   }
@@ -446,11 +542,9 @@ async function submitApply() {
 }
 
 function clearApplyForm() {
-  ['a_project','a_wasteType','a_quantity','a_dischargeDate','a_transporter','a_disposer','a_note']
+  ['a_project','a_contract','a_quantity','a_dischargeDate','a_note']
     .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('a_rebar').value = '該当なし';
-  document.querySelectorAll('#a_rebarSegment .segment-item').forEach(i => i.classList.remove('active'));
-  document.querySelector('#a_rebarSegment .segment-item[data-value="該当なし"]').classList.add('active');
+  selectedWastes = [];
 }
 </script>
 
