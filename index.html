@@ -11,6 +11,7 @@
   .page.active { display: block; }
   .header { background: #06C755; color: white; padding: 14px 16px; margin: -16px -16px 16px; display: flex; align-items: center; gap: 8px; }
   .header h1 { font-size: 16px; margin: 0; font-weight: 500; }
+  .back-btn { background: transparent; border: none; color: white; font-size: 22px; cursor: pointer; padding: 0; margin-right: 4px; }
   .user-box { background: #E8F7EE; color: #0F6E56; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; }
   .section-label { font-size: 13px; color: #666; margin-bottom: 12px; }
   .menu-btn { width: 100%; padding: 16px; background: white; border: 1.5px solid #06C755; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; text-align: left; margin-bottom: 10px; }
@@ -23,6 +24,11 @@
   .sub-btn { width: 100%; padding: 14px; background: white; border: 0.5px solid #ccc; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; text-align: left; margin-bottom: 8px; }
   .sub-btn .icon { font-size: 20px; color: #888; }
   .sub-btn .label { flex: 1; font-size: 14px; }
+  label { display: block; margin: 12px 0 4px; font-size: 14px; font-weight: 500; }
+  .req { color: #E24B4A; }
+  input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; font-family: inherit; background: white; }
+  textarea { min-height: 70px; resize: vertical; }
+  .submit { width: 100%; padding: 14px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; margin-top: 20px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -37,7 +43,7 @@
   
   <div class="section-label">新規で依頼する</div>
   
-  <button class="menu-btn">
+  <button class="menu-btn" onclick="showPage('contract')">
     <div class="icon-circle">📄</div>
     <div class="label">
       <div class="title">新規契約の依頼</div>
@@ -69,6 +75,48 @@
     <div class="label">契約状況を見る</div>
   </button>
 </div>
+
+<!-- ===== 契約フォーム画面 ===== -->
+<div id="page-contract" class="page">
+  <div class="header">
+    <button class="back-btn" onclick="showPage('menu')">‹</button>
+    <h1>新規契約の依頼</h1>
+  </div>
+  
+  <label>工事名 <span class="req">*</span></label>
+  <input id="c_projectName" type="text" placeholder="例:〇〇ビル解体工事">
+  
+  <label>排出事業者名 <span class="req">*</span></label>
+  <input id="c_company" type="text" placeholder="例:株式会社〇〇建設">
+  
+  <label>担当者名 <span class="req">*</span></label>
+  <input id="c_person" type="text">
+  
+  <label>連絡先 <span class="req">*</span></label>
+  <input id="c_contact" type="text" placeholder="電話番号またはメール">
+  
+  <label>廃棄物種類</label>
+  <input id="c_wasteType" type="text" placeholder="例:がれき類、木くず">
+  
+  <label>予定数量</label>
+  <input id="c_quantity" type="text" placeholder="例:月10t">
+  
+  <label>契約開始希望日</label>
+  <input id="c_startDate" type="date">
+  
+  <label>備考</label>
+  <textarea id="c_note"></textarea>
+  
+  <button class="submit">送信する</button>
+</div>
+
+<script>
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
 
 </body>
 </html>
