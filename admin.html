@@ -29,11 +29,45 @@
   .auth-error .icon { font-size: 40px; margin-bottom: 12px; }
   .auth-error h2 { font-size: 18px; margin: 0 0 8px; color: #0F172A; }
   .auth-error p { font-size: 13px; color: #64748B; margin: 0; line-height: 1.6; }
+  
+  /* フィルター */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+  .search-wrap { position: relative; flex: 1; min-width: 240px; }
+  .search-wrap .icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 13px; pointer-events: none; }
+  .search-wrap input { width: 100%; padding: 9px 12px 9px 32px; border: 1px solid #CBD5E1; border-radius: 7px; font-size: 13px; font-family: inherit; }
+  .search-wrap input:focus { outline: none; border-color: #0F766E; box-shadow: 0 0 0 3px rgba(15,118,110,0.12); }
+  .filter-select { padding: 9px 10px; border: 1px solid #CBD5E1; border-radius: 7px; font-size: 12px; font-family: inherit; background: white; }
+  .filter-select:focus { outline: none; border-color: #0F766E; }
+  .refresh-btn { padding: 8px 14px; background: white; border: 1px solid #CBD5E1; border-radius: 7px; font-size: 12px; cursor: pointer; color: #475569; }
+  .refresh-btn:hover { background: #F8FAFC; }
+  
+  .count-label { font-size: 11px; color: #64748B; margin-bottom: 8px; }
+  
+  /* テーブル */
+  .table-wrap { border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead tr { background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
+  th { padding: 9px 10px; text-align: left; font-weight: 600; color: #475569; }
+  tbody tr { border-bottom: 1px solid #F1F5F9; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #FAFBFC; }
+  td { padding: 9px 10px; vertical-align: top; }
+  .mono { font-family: monospace; font-size: 10px; color: #64748B; }
+  .muted { color: #94A3B8; font-style: italic; }
+  
+  /* バッジ */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  .badge-pending { background: #FAEEDA; color: #854F0B; }
+  .badge-done { background: #E1F5EE; color: #0F6E56; }
+  .badge-cancel { background: #F1EFE8; color: #5F5E5A; }
+  
+  .empty { padding: 40px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
+  .loading { padding: 40px 20px; text-align: center; color: #64748B; font-size: 13px; }
 </style>
 </head>
 <body>
 
-<!-- 認証エラー画面(トークンが無効・未指定のとき表示) -->
+<!-- 認証エラー画面 -->
 <div id="authError" class="auth-error" style="display:none;">
   <div class="icon">🔒</div>
   <h2>アクセスできません</h2>
@@ -49,13 +83,32 @@
   </div>
   
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('applies')">📋 申請一覧</div>
-    <div class="tab" onclick="switchTab('wastes')">📦 廃棄物マスタ</div>
-    <div class="tab" onclick="switchTab('vendors')">🚚 業者マスタ</div>
+    <div class="tab active" data-tab="applies" onclick="switchTab(this, 'applies')">📋 申請一覧</div>
+    <div class="tab" data-tab="wastes" onclick="switchTab(this, 'wastes')">📦 廃棄物マスタ</div>
+    <div class="tab" data-tab="vendors" onclick="switchTab(this, 'vendors')">🚚 業者マスタ</div>
   </div>
   
+  <!-- 申請一覧 -->
   <div id="panel-applies" class="panel">
-    <div class="placeholder">申請一覧(これから実装します)</div>
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="icon">🔍</span>
+        <input id="appliesSearch" type="text" placeholder="申請ID・工事名・申請者名で検索" oninput="renderApplies()">
+      </div>
+      <select id="appliesStatus" class="filter-select" onchange="renderApplies()">
+        <option value="">すべて</option>
+        <option value="申請中">申請中</option>
+        <option value="完了">完了</option>
+        <option value="キャンセル">キャンセル</option>
+      </select>
+      <button class="refresh-btn" onclick="loadApplies()">🔄 更新</button>
+    </div>
+    
+    <div class="count-label" id="appliesCount"></div>
+    
+    <div id="appliesTableWrap">
+      <div class="loading">読み込み中...</div>
+    </div>
   </div>
   
   <div id="panel-wastes" class="panel hidden">
@@ -73,22 +126,124 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02r
 
 // ===== トークン確認 =====
 const params = new URLSearchParams(window.location.search);
-const token = params.get('token');
+const TOKEN = params.get('token');
 
-if (!token) {
+let allApplies = [];
+
+if (!TOKEN) {
   document.getElementById('authError').style.display = 'block';
 } else {
-  // トークンの正当性はサーバー側で検証する
   document.getElementById('mainApp').style.display = 'block';
-  // 初回タブを開く処理(後で実装)
+  loadApplies();
 }
 
 // ===== タブ切り替え =====
-function switchTab(name) {
+function switchTab(el, name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  el.classList.add('active');
   document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
   document.getElementById('panel-' + name).classList.remove('hidden');
+}
+
+// ===== 申請一覧:読み込み =====
+async function loadApplies() {
+  document.getElementById('appliesTableWrap').innerHTML = '<div class="loading">読み込み中...</div>';
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getAllApplies', token: TOKEN })
+    });
+    const data = await res.json();
+    
+    if (!data.ok) {
+      document.getElementById('appliesTableWrap').innerHTML = 
+        '<div class="empty">読み込みエラー: ' + (data.error || '不明') + '</div>';
+      return;
+    }
+    
+    allApplies = data.applies || [];
+    renderApplies();
+  } catch (e) {
+    document.getElementById('appliesTableWrap').innerHTML = 
+      '<div class="empty">通信エラー: ' + e.message + '</div>';
+  }
+}
+
+// ===== 申請一覧:描画(フィルター適用)=====
+function renderApplies() {
+  const query = document.getElementById('appliesSearch').value.trim().toLowerCase();
+  const statusFilter = document.getElementById('appliesStatus').value;
+  
+  let filtered = allApplies;
+  
+  if (statusFilter) {
+    filtered = filtered.filter(a => a.status === statusFilter);
+  }
+  
+  if (query) {
+    filtered = filtered.filter(a => 
+      (a.id && a.id.toLowerCase().includes(query)) ||
+      (a.projectName && a.projectName.toLowerCase().includes(query)) ||
+      (a.applicantName && a.applicantName.toLowerCase().includes(query))
+    );
+  }
+  
+  document.getElementById('appliesCount').textContent = filtered.length + ' 件';
+  
+  const wrap = document.getElementById('appliesTableWrap');
+  
+  if (filtered.length === 0) {
+    wrap.innerHTML = '<div class="empty">該当する申請がありません</div>';
+    return;
+  }
+  
+  const rows = filtered.map(a => {
+    const isEmptyVehicle = a.contractId === 'EMPTY';
+    const vendorCell = isEmptyVehicle
+      ? '<span class="muted">空車依頼</span>'
+      : escapeHtml(a.transporterName) + ' → ' + escapeHtml(a.disposerName);
+    
+    const badgeClass = a.status === '完了' ? 'badge-done' 
+      : a.status === 'キャンセル' ? 'badge-cancel' 
+      : 'badge-pending';
+    
+    return `
+      <tr>
+        <td><span class="mono">${escapeHtml(a.id)}</span></td>
+        <td>${escapeHtml(a.submittedAt)}</td>
+        <td>${escapeHtml(a.projectName)}</td>
+        <td>${escapeHtml(a.applicantName)}</td>
+        <td>${escapeHtml(a.count)}</td>
+        <td>${vendorCell}</td>
+        <td style="text-align:center;"><span class="badge ${badgeClass}">${escapeHtml(a.status)}</span></td>
+      </tr>
+    `;
+  }).join('');
+  
+  wrap.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>申請ID</th>
+            <th>申請日時</th>
+            <th>工事名</th>
+            <th>申請者</th>
+            <th>枚数</th>
+            <th>業者</th>
+            <th style="text-align:center;">状態</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 </script>
 
