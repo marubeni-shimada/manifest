@@ -7,29 +7,67 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, "Hiragino Sans", sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #333; }
-  .page { display: none; padding: 16px; min-height: 100vh; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; margin: 0; padding: 0; background: #F0F4F5; color: #0F172A; -webkit-font-smoothing: antialiased; }
+  
+  .page { display: none; min-height: 100vh; }
   .page.active { display: block; }
-  .header { background: #06C755; color: white; padding: 14px 16px; margin: -16px -16px 16px; display: flex; align-items: center; gap: 8px; }
-  .header h1 { font-size: 16px; margin: 0; font-weight: 500; }
-  .back-btn { background: transparent; border: none; color: white; font-size: 22px; cursor: pointer; padding: 0; margin-right: 4px; }
-  .user-box { background: #E8F7EE; color: #0F6E56; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; }
-  .section-label { font-size: 13px; color: #666; margin-bottom: 12px; }
-  .menu-btn { width: 100%; padding: 16px; background: white; border: 1.5px solid #06C755; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; text-align: left; margin-bottom: 10px; }
-  .menu-btn .icon-circle { width: 40px; height: 40px; background: #E8F7EE; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
-  .menu-btn .label { flex: 1; }
-  .menu-btn .title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
-  .menu-btn .desc { font-size: 11px; color: #666; }
-  .menu-btn .arrow { color: #aaa; font-size: 18px; }
-  .divider { border-top: 0.5px solid #ddd; margin: 20px 0 16px; }
-  .sub-btn { width: 100%; padding: 14px; background: white; border: 0.5px solid #ccc; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; text-align: left; margin-bottom: 8px; }
-  .sub-btn .icon { font-size: 20px; color: #888; }
-  .sub-btn .label { flex: 1; font-size: 14px; }
-  label { display: block; margin: 12px 0 4px; font-size: 14px; font-weight: 500; }
-  .req { color: #E24B4A; }
-  input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; font-family: inherit; background: white; }
-  textarea { min-height: 70px; resize: vertical; }
-  .submit { width: 100%; padding: 14px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; margin-top: 20px; cursor: pointer; }
+  
+  /* ヘッダー */
+  .header { background: linear-gradient(135deg, #0F766E 0%, #0E7490 100%); color: white; padding: 18px 18px 24px; display: flex; align-items: center; gap: 10px; }
+  .header .eyebrow { font-size: 10px; opacity: 0.85; letter-spacing: 1px; margin-bottom: 2px; font-weight: 500; }
+  .header h1 { font-size: 17px; margin: 0; font-weight: 600; letter-spacing: 0.3px; }
+  .back-btn { width: 32px; height: 32px; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 20px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  
+  /* コンテンツエリア */
+  .content { padding: 16px; padding-bottom: 60px; }
+  
+  /* ユーザーバッジ */
+  .user-card { background: linear-gradient(135deg, #ECFEFF 0%, #F0FDFA 100%); border: 1px solid #A5F3FC; padding: 12px 14px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+  .user-avatar { width: 36px; height: 36px; background: #0F766E; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+  .user-info-label { font-size: 10px; color: #0E7490; font-weight: 600; letter-spacing: 0.5px; }
+  .user-info-name { font-size: 14px; font-weight: 600; color: #134E4A; }
+  
+  /* セクションタイトル */
+  .section-title { font-size: 11px; color: #64748B; font-weight: 700; letter-spacing: 1.2px; margin: 0 0 12px; text-transform: uppercase; }
+  
+  /* メインボタン */
+  .menu-btn { width: 100%; background: white; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px; text-align: left; margin-bottom: 12px; cursor: pointer; box-shadow: 0 1px 3px rgba(15,23,42,0.04); transition: transform 0.1s, box-shadow 0.1s; }
+  .menu-btn:active { transform: scale(0.98); box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
+  .menu-btn .icon-box { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-size: 20px; }
+  .icon-green { background: linear-gradient(135deg, #06C755 0%, #0F766E 100%); }
+  .icon-blue { background: linear-gradient(135deg, #0EA5E9 0%, #0E7490 100%); }
+  .menu-btn .text { flex: 1; }
+  .menu-btn .title { font-size: 14px; font-weight: 600; color: #0F172A; }
+  .menu-btn .desc { font-size: 11px; color: #64748B; margin-top: 3px; }
+  .menu-btn .arrow { color: #94A3B8; font-size: 20px; }
+  
+  /* セカンダリボタン */
+  .divider { border-top: 1px solid #E2E8F0; margin: 20px 0 16px; }
+  .sub-btn { width: 100%; background: white; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; margin-bottom: 8px; text-align: left; }
+  .sub-btn:active { background: #F8FAFC; }
+  .sub-btn .icon { font-size: 18px; }
+  .sub-btn .label { flex: 1; font-size: 13px; color: #334155; font-weight: 500; }
+  
+  /* フォーム */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 6px; letter-spacing: 0.5px; }
+  .req { color: #DC2626; font-size: 8px; vertical-align: middle; }
+  input, textarea, select { width: 100%; padding: 11px 13px; border: 1px solid #CBD5E1; border-radius: 9px; font-size: 14px; font-family: inherit; background: white; color: #0F172A; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #0F766E; box-shadow: 0 0 0 3px rgba(15,118,110,0.12); }
+  textarea { min-height: 75px; resize: vertical; }
+  
+  /* 横並び2カラム */
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  
+  /* 送信ボタン */
+  .submit { width: 100%; padding: 14px; background: linear-gradient(135deg, #06C755 0%, #0F766E 100%); color: white; border: none; border-radius: 11px; font-size: 15px; font-weight: 600; margin-top: 22px; cursor: pointer; box-shadow: 0 3px 10px rgba(15,118,110,0.25); letter-spacing: 0.5px; }
+  .submit:active { transform: scale(0.99); }
+  .submit:disabled { opacity: 0.6; }
+  
+  /* セグメントコントロール(筋の有無のような少数選択肢) */
+  .segment { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; background: #F1F5F9; padding: 4px; border-radius: 9px; }
+  .segment-item { padding: 9px 8px; text-align: center; font-size: 12px; color: #64748B; border-radius: 6px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
+  .segment-item.active { background: white; color: #0E7490; font-weight: 600; box-shadow: 0 1px 3px rgba(15,23,42,0.1); }
 </style>
 </head>
 <body>
@@ -37,127 +75,184 @@
 <!-- ===== メニュー画面 ===== -->
 <div id="page-menu" class="page active">
   <div class="header">
-    <h1>📋 マニフェスト管理</h1>
+    <div>
+      <div class="eyebrow">MANIFEST MANAGEMENT</div>
+      <h1>マニフェスト管理</h1>
+    </div>
   </div>
   
-  <div class="user-box" id="userBox">こんにちは、テストユーザーさん</div>
-  
-  <div class="section-label">新規で依頼する</div>
-  
-  <button class="menu-btn" onclick="showPage('contract')">
-    <div class="icon-circle">📄</div>
-    <div class="label">
-      <div class="title">新規契約の依頼</div>
-      <div class="desc">新しい工事の契約書作成</div>
+  <div class="content">
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div>
+        <div class="user-info-label">ログイン中</div>
+        <div class="user-info-name" id="userName">読み込み中...</div>
+      </div>
     </div>
-    <div class="arrow">›</div>
-  </button>
-  
-  <button class="menu-btn" onclick="openApplyForm()">
-    <div class="icon-circle">🚚</div>
-    <div class="label">
-      <div class="title">マニフェスト申請</div>
-      <div class="desc">廃棄物の排出申請</div>
-    </div>
-    <div class="arrow">›</div>
-  </button>
-  
-  <div class="divider"></div>
-  
-  <div class="section-label">履歴・状況確認</div>
-  
-  <button class="sub-btn">
-    <div class="icon">📜</div>
-    <div class="label">申請履歴を見る</div>
-  </button>
-  
-  <button class="sub-btn" onclick="showPage('finish')">
-    <div class="icon">🏁</div>
-    <div class="label">工事を終了する</div>
-  </button>
+    
+    <div class="section-title">新規で依頼する</div>
+    
+    <button class="menu-btn" onclick="showPage('contract')">
+      <div class="icon-box icon-green">📄</div>
+      <div class="text">
+        <div class="title">新規契約の依頼</div>
+        <div class="desc">新しい工事の契約書作成</div>
+      </div>
+      <div class="arrow">›</div>
+    </button>
+    
+    <button class="menu-btn" onclick="openApplyForm()">
+      <div class="icon-box icon-blue">🚚</div>
+      <div class="text">
+        <div class="title">マニフェスト申請</div>
+        <div class="desc">廃棄物の排出申請</div>
+      </div>
+      <div class="arrow">›</div>
+    </button>
+    
+    <div class="divider"></div>
+    
+    <div class="section-title">履歴・状況確認</div>
+    
+    <button class="sub-btn">
+      <div class="icon">📜</div>
+      <div class="label">申請履歴を見る</div>
+    </button>
+    
+    <button class="sub-btn" onclick="showPage('finish')">
+      <div class="icon">🏁</div>
+      <div class="label">工事を終了する</div>
+    </button>
+  </div>
 </div>
 
 <!-- ===== 契約フォーム画面 ===== -->
 <div id="page-contract" class="page">
   <div class="header">
     <button class="back-btn" onclick="showPage('menu')">‹</button>
-    <h1>新規契約の依頼</h1>
+    <div>
+      <div class="eyebrow">NEW CONTRACT</div>
+      <h1>新規契約の依頼</h1>
+    </div>
   </div>
   
-  <label>工事名 <span class="req">*</span></label>
-  <input id="c_projectName" type="text" placeholder="例:〇〇ビル解体工事">
-  
-  <label>排出事業者名 <span class="req">*</span></label>
-  <input id="c_company" type="text" placeholder="例:株式会社〇〇建設">
-  
-  <label>担当者名 <span class="req">*</span></label>
-  <input id="c_person" type="text">
-  
-  <label>連絡先 <span class="req">*</span></label>
-  <input id="c_contact" type="text" placeholder="電話番号またはメール">
-  
-  <label>廃棄物種類</label>
-  <input id="c_wasteType" type="text" placeholder="例:がれき類、木くず">
-  
-  <label>予定数量</label>
-  <input id="c_quantity" type="text" placeholder="例:月10t">
-  
-  <label>契約開始希望日</label>
-  <input id="c_startDate" type="date">
-  
-  <label>備考</label>
-  <textarea id="c_note"></textarea>
-  
-  <button class="submit" onclick="submitContract()">送信する</button>
+  <div class="content">
+    <div class="field">
+      <label>工事名 <span class="req">●</span></label>
+      <input id="c_projectName" type="text" placeholder="例:〇〇ビル解体工事">
+    </div>
+    
+    <div class="field">
+      <label>排出事業者名 <span class="req">●</span></label>
+      <input id="c_company" type="text" placeholder="例:株式会社〇〇建設">
+    </div>
+    
+    <div class="row2">
+      <div class="field">
+        <label>担当者名 <span class="req">●</span></label>
+        <input id="c_person" type="text">
+      </div>
+      <div class="field">
+        <label>連絡先 <span class="req">●</span></label>
+        <input id="c_contact" type="text" placeholder="電話/メール">
+      </div>
+    </div>
+    
+    <div class="field">
+      <label>廃棄物種類</label>
+      <input id="c_wasteType" type="text" placeholder="例:がれき類、木くず">
+    </div>
+    
+    <div class="row2">
+      <div class="field">
+        <label>予定数量</label>
+        <input id="c_quantity" type="text" placeholder="例:月10t">
+      </div>
+      <div class="field">
+        <label>契約開始希望日</label>
+        <input id="c_startDate" type="date">
+      </div>
+    </div>
+    
+    <div class="field">
+      <label>備考</label>
+      <textarea id="c_note"></textarea>
+    </div>
+    
+    <button class="submit" onclick="submitContract()">送信する</button>
+  </div>
 </div>
 
 <!-- ===== マニフェスト申請フォーム画面 ===== -->
 <div id="page-apply" class="page">
   <div class="header">
     <button class="back-btn" onclick="showPage('menu')">‹</button>
-    <h1>マニフェスト申請</h1>
+    <div>
+      <div class="eyebrow">NEW APPLICATION</div>
+      <h1>マニフェスト申請</h1>
+    </div>
   </div>
   
-  <label>工事名 <span class="req">*</span></label>
-  <select id="a_project">
-    <option value="">読み込み中...</option>
-  </select>
-  
-  <label>廃棄物の種類 <span class="req">*</span></label>
-  <select id="a_wasteType">
-    <option value="">選択してください</option>
-    <option>がれき類</option>
-    <option>木くず</option>
-    <option>廃プラスチック類</option>
-    <option>金属くず</option>
-    <option>ガラスくず・陶磁器くず</option>
-    <option>混合廃棄物</option>
-    <option>その他</option>
-  </select>
-  
-  <label>筋の有無</label>
-  <select id="a_rebar">
-    <option value="該当なし">該当なし</option>
-    <option value="有筋">有筋</option>
-    <option value="無筋">無筋</option>
-  </select>
-  
-  <label>数量 <span class="req">*</span></label>
-  <input id="a_quantity" type="text" placeholder="例:2t、5m³">
-  
-  <label>排出予定日 <span class="req">*</span></label>
-  <input id="a_dischargeDate" type="date">
-  
-  <label>収集運搬業者</label>
-  <input id="a_transporter" type="text">
-  
-  <label>処分業者</label>
-  <input id="a_disposer" type="text">
-  
-  <label>備考</label>
-  <textarea id="a_note"></textarea>
-  
-  <button class="submit" onclick="submitApply()">送信する</button>
+  <div class="content">
+    <div class="field">
+      <label>工事名 <span class="req">●</span></label>
+      <select id="a_project">
+        <option value="">読み込み中...</option>
+      </select>
+    </div>
+    
+    <div class="field">
+      <label>廃棄物の種類 <span class="req">●</span></label>
+      <select id="a_wasteType">
+        <option value="">選択してください</option>
+        <option>がれき類</option>
+        <option>木くず</option>
+        <option>廃プラスチック類</option>
+        <option>金属くず</option>
+        <option>ガラスくず・陶磁器くず</option>
+        <option>混合廃棄物</option>
+        <option>その他</option>
+      </select>
+    </div>
+    
+    <div class="field">
+      <label>筋の有無</label>
+      <div class="segment" id="a_rebarSegment">
+        <div class="segment-item active" data-value="該当なし">該当なし</div>
+        <div class="segment-item" data-value="有筋">有筋</div>
+        <div class="segment-item" data-value="無筋">無筋</div>
+      </div>
+      <input type="hidden" id="a_rebar" value="該当なし">
+    </div>
+    
+    <div class="row2">
+      <div class="field">
+        <label>数量 <span class="req">●</span></label>
+        <input id="a_quantity" type="text" placeholder="2t、5m³">
+      </div>
+      <div class="field">
+        <label>排出予定日 <span class="req">●</span></label>
+        <input id="a_dischargeDate" type="date">
+      </div>
+    </div>
+    
+    <div class="field">
+      <label>収集運搬業者</label>
+      <input id="a_transporter" type="text">
+    </div>
+    
+    <div class="field">
+      <label>処分業者</label>
+      <input id="a_disposer" type="text">
+    </div>
+    
+    <div class="field">
+      <label>備考</label>
+      <textarea id="a_note"></textarea>
+    </div>
+    
+    <button class="submit" onclick="submitApply()">申請を送信</button>
+  </div>
 </div>
 
 <script>
@@ -176,10 +271,12 @@ async function init() {
       return;
     }
     userProfile = await liff.getProfile();
-    document.getElementById('userBox').textContent = 'こんにちは、' + userProfile.displayName + 'さん';
+    const name = userProfile.displayName;
+    document.getElementById('userName').textContent = name;
+    document.getElementById('userAvatar').textContent = name.charAt(0);
     registerUser();
   } catch (e) {
-    document.getElementById('userBox').textContent = '⚠️ LIFF初期化エラー: ' + e.message;
+    document.getElementById('userName').textContent = '⚠️ エラー';
   }
 }
 init();
@@ -207,6 +304,15 @@ function showPage(name) {
   window.scrollTo(0, 0);
 }
 
+// ===== セグメントコントロール(筋の有無)=====
+document.querySelectorAll('#a_rebarSegment .segment-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('#a_rebarSegment .segment-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('a_rebar').value = item.dataset.value;
+  });
+});
+
 // ===== 契約フォーム送信 =====
 async function submitContract() {
   const payload = {
@@ -224,7 +330,7 @@ async function submitContract() {
   };
   
   if (!payload.projectName || !payload.company || !payload.person || !payload.contact) {
-    alert('必須項目(*)を入力してください');
+    alert('必須項目(●)を入力してください');
     return;
   }
   
@@ -259,7 +365,7 @@ function clearContractForm() {
     .forEach(id => document.getElementById(id).value = '');
 }
 
-// ===== 申請フォームを開く(工事プルダウン読み込み)=====
+// ===== 申請フォームを開く =====
 async function openApplyForm() {
   showPage('apply');
   const select = document.getElementById('a_project');
@@ -311,7 +417,7 @@ async function submitApply() {
   };
   
   if (!payload.wasteType || !payload.quantity || !payload.dischargeDate) {
-    alert('必須項目(*)を入力してください');
+    alert('必須項目(●)を入力してください');
     return;
   }
   
@@ -336,13 +442,15 @@ async function submitApply() {
     alert('❌ 通信エラー: ' + e.message);
   }
   btn.disabled = false;
-  btn.textContent = '送信する';
+  btn.textContent = '申請を送信';
 }
 
 function clearApplyForm() {
   ['a_project','a_wasteType','a_quantity','a_dischargeDate','a_transporter','a_disposer','a_note']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('a_rebar').value = '該当なし';
+  document.querySelectorAll('#a_rebarSegment .segment-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('#a_rebarSegment .segment-item[data-value="該当なし"]').classList.add('active');
 }
 </script>
 
