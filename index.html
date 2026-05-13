@@ -55,16 +55,37 @@
   .submit:active { transform: scale(0.99); }
   .submit:disabled { opacity: 0.6; }
   
-  /* チップ(廃棄物複数選択) */
+  /* チップ */
   .chip-box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; padding: 10px; }
   .chip-selected { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; margin-bottom: 8px; }
   .chip-empty { color: #94A3B8; font-size: 12px; padding: 4px; }
   .chip-active { background: #0F766E; color: white; padding: 5px 10px; border-radius: 999px; font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer; }
-  .chip-active:active { opacity: 0.8; }
   .chip-divider { border-top: 1px solid #E2E8F0; margin: 8px 0; padding-top: 8px; font-size: 10px; color: #64748B; font-weight: 600; }
   .chip-available { display: flex; flex-wrap: wrap; gap: 5px; }
   .chip-add { background: white; border: 1px solid #CBD5E1; color: #475569; padding: 5px 10px; border-radius: 999px; font-size: 12px; cursor: pointer; }
   .chip-add:active { background: #F1F5F9; }
+  
+  /* 業者選択ピッカー(フォーム上のボタン) */
+  .picker-btn { width: 100%; background: white; border: 1px solid #CBD5E1; border-radius: 9px; padding: 11px 13px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; color: #94A3B8; }
+  .picker-btn.has-value { background: #ECFEFF; border: 1.5px solid #0F766E; color: #0E7490; font-weight: 500; }
+  .picker-btn .icon { color: #94A3B8; font-size: 14px; }
+  .picker-btn.has-value .icon { color: #0F766E; font-size: 12px; font-weight: 600; }
+  
+  /* モーダル(業者選択) */
+  .modal { display: none; position: fixed; inset: 0; background: white; z-index: 100; flex-direction: column; }
+  .modal.active { display: flex; }
+  .modal-header { padding: 14px 16px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .modal-close { background: transparent; border: none; font-size: 22px; cursor: pointer; color: #475569; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+  .modal-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .modal-search { padding: 12px 16px; border-bottom: 1px solid #E2E8F0; flex-shrink: 0; }
+  .modal-search-wrap { position: relative; }
+  .modal-search-wrap input { padding-left: 36px; }
+  .modal-search-wrap .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 16px; pointer-events: none; }
+  .modal-count { font-size: 11px; color: #64748B; margin-top: 6px; }
+  .modal-list { flex: 1; overflow-y: auto; padding: 8px 12px; }
+  .modal-item { background: white; border: 1px solid #E2E8F0; border-radius: 9px; padding: 12px 14px; margin-bottom: 6px; font-size: 14px; cursor: pointer; }
+  .modal-item:active { background: #F1F5F9; }
+  .modal-empty { padding: 30px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -157,16 +178,22 @@
     
     <div class="field">
       <label>収集運搬業者 <span class="req">●</span></label>
-      <select id="c_transporter">
-        <option value="">読み込み中...</option>
-      </select>
+      <button class="picker-btn" id="c_transporterBtn" onclick="openVendorPicker('transporter')">
+        <span id="c_transporterLabel">タップして選択</span>
+        <span class="icon">🔍</span>
+      </button>
+      <input type="hidden" id="c_transporterId">
+      <input type="hidden" id="c_transporterName">
     </div>
     
     <div class="field">
       <label>処分業者 <span class="req">●</span></label>
-      <select id="c_disposer">
-        <option value="">読み込み中...</option>
-      </select>
+      <button class="picker-btn" id="c_disposerBtn" onclick="openVendorPicker('disposer')">
+        <span id="c_disposerLabel">タップして選択</span>
+        <span class="icon">🔍</span>
+      </button>
+      <input type="hidden" id="c_disposerId">
+      <input type="hidden" id="c_disposerName">
     </div>
     
     <div class="field">
@@ -239,15 +266,36 @@
   </div>
 </div>
 
+<!-- ===== 業者選択モーダル ===== -->
+<div id="vendorModal" class="modal">
+  <div class="modal-header">
+    <button class="modal-close" onclick="closeVendorPicker()">✕</button>
+    <div class="modal-title" id="vendorModalTitle">業者を選択</div>
+  </div>
+  <div class="modal-search">
+    <div class="modal-search-wrap">
+      <span class="icon">🔍</span>
+      <input id="vendorSearchInput" type="text" placeholder="業者名で検索" oninput="filterVendors()">
+    </div>
+    <div class="modal-count" id="vendorCount"></div>
+  </div>
+  <div class="modal-list" id="vendorList"></div>
+</div>
+
 <script>
 // ===== 設定 =====
 const LIFF_ID = '2009834318-xkka6j2s';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02rDkgXBj2B6289YMhmi7C9lXCKEIbrfXNGW3AU6Qe7L2_jPg/exec';
 
 let userProfile = null;
-let myContracts = [];      // 自分の契約一覧(申請フォームで使用)
-let wasteList = [];        // 廃棄物マスタ
-let selectedWastes = [];   // 申請フォームで選択中の廃棄物
+let myContracts = [];
+let wasteList = [];
+let selectedWastes = [];
+
+// 業者マスタ(モーダル用)
+let allTransporters = [];
+let allDisposers = [];
+let currentPickerType = null;  // 'transporter' or 'disposer'
 
 // ===== LIFF初期化 =====
 async function init() {
@@ -268,7 +316,6 @@ async function init() {
 }
 init();
 
-// ===== ユーザーマスタへの登録 =====
 async function registerUser() {
   try {
     await fetch(GAS_URL, {
@@ -284,50 +331,90 @@ async function registerUser() {
   }
 }
 
-// ===== 画面切り替え =====
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   window.scrollTo(0, 0);
 }
 
-// ===== 契約フォームを開く(業者プルダウン読み込み)=====
+// ===== 契約フォームを開く =====
 async function openContractForm() {
   showPage('contract');
-  const trans = document.getElementById('c_transporter');
-  const disp = document.getElementById('c_disposer');
-  trans.innerHTML = '<option value="">読み込み中...</option>';
-  disp.innerHTML = '<option value="">読み込み中...</option>';
-  
-  try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'getVendors' })
-    });
-    const data = await res.json();
-    
-    if (data.ok) {
-      trans.innerHTML = '<option value="">選択してください</option>' +
-        data.transporters.map(v => `<option value="${v.id}|${v.name}">${v.name}</option>`).join('');
-      disp.innerHTML = '<option value="">選択してください</option>' +
-        data.disposers.map(v => `<option value="${v.id}|${v.name}">${v.name}</option>`).join('');
+  // 業者マスタを取得しておく(モーダル用にメモリに保持)
+  if (allTransporters.length === 0 || allDisposers.length === 0) {
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getVendors' })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        allTransporters = data.transporters;
+        allDisposers = data.disposers;
+      }
+    } catch (e) {
+      console.error('vendor fetch failed:', e);
     }
-  } catch (e) {
-    trans.innerHTML = '<option value="">読み込みエラー</option>';
-    disp.innerHTML = '<option value="">読み込みエラー</option>';
   }
+}
+
+// ===== 業者選択モーダルを開く =====
+function openVendorPicker(type) {
+  currentPickerType = type;
+  document.getElementById('vendorModalTitle').textContent = 
+    type === 'transporter' ? '収集運搬業者を選択' : '処分業者を選択';
+  document.getElementById('vendorSearchInput').value = '';
+  document.getElementById('vendorModal').classList.add('active');
+  filterVendors();
+  setTimeout(() => document.getElementById('vendorSearchInput').focus(), 100);
+}
+
+function closeVendorPicker() {
+  document.getElementById('vendorModal').classList.remove('active');
+}
+
+function filterVendors() {
+  const query = document.getElementById('vendorSearchInput').value.trim().toLowerCase();
+  const source = currentPickerType === 'transporter' ? allTransporters : allDisposers;
+  const filtered = query
+    ? source.filter(v => v.name.toLowerCase().includes(query))
+    : source;
+  
+  const listEl = document.getElementById('vendorList');
+  const countEl = document.getElementById('vendorCount');
+  
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="modal-empty">該当する業者がありません</div>';
+    countEl.textContent = '';
+  } else {
+    countEl.textContent = filtered.length + ' 件';
+    listEl.innerHTML = filtered.map(v => 
+      `<div class="modal-item" onclick="selectVendor('${escapeAttr(v.id)}','${escapeAttr(v.name)}')">${v.name}</div>`
+    ).join('');
+  }
+}
+
+function selectVendor(id, name) {
+  const prefix = currentPickerType === 'transporter' ? 'c_transporter' : 'c_disposer';
+  document.getElementById(prefix + 'Id').value = id;
+  document.getElementById(prefix + 'Name').value = name;
+  document.getElementById(prefix + 'Label').textContent = name;
+  document.getElementById(prefix + 'Btn').classList.add('has-value');
+  document.querySelector('#' + prefix + 'Btn .icon').textContent = '変更';
+  closeVendorPicker();
 }
 
 // ===== 契約フォーム送信 =====
 async function submitContract() {
-  const transValue = val('c_transporter');
-  const dispValue = val('c_disposer');
-  if (!transValue || !dispValue) {
+  const transId = val('c_transporterId');
+  const transName = val('c_transporterName');
+  const dispId = val('c_disposerId');
+  const dispName = val('c_disposerName');
+  
+  if (!transId || !dispId) {
     alert('収集運搬業者と処分業者を選択してください');
     return;
   }
-  const [transId, transName] = transValue.split('|');
-  const [dispId, dispName] = dispValue.split('|');
   
   const payload = {
     action: 'submitContract',
@@ -380,17 +467,22 @@ function clearContractForm() {
   ['c_projectName','c_person','c_contact','c_startDate','c_note']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('c_company').value = '株式会社丸紅';
-  document.getElementById('c_transporter').selectedIndex = 0;
-  document.getElementById('c_disposer').selectedIndex = 0;
+  ['c_transporterId','c_transporterName','c_disposerId','c_disposerName']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('c_transporterLabel').textContent = 'タップして選択';
+  document.getElementById('c_disposerLabel').textContent = 'タップして選択';
+  document.getElementById('c_transporterBtn').classList.remove('has-value');
+  document.getElementById('c_disposerBtn').classList.remove('has-value');
+  document.querySelector('#c_transporterBtn .icon').textContent = '🔍';
+  document.querySelector('#c_disposerBtn .icon').textContent = '🔍';
 }
 
-// ===== 申請フォームを開く =====
+// ===== 申請フォーム =====
 async function openApplyForm() {
   showPage('apply');
   selectedWastes = [];
   document.getElementById('a_contract').innerHTML = '<option value="">先に工事を選んでください</option>';
   
-  // 契約一覧と廃棄物マスタを並列で取得
   try {
     const [contractsRes, wastesRes] = await Promise.all([
       fetch(GAS_URL, {
@@ -408,7 +500,6 @@ async function openApplyForm() {
     const contractsData = await contractsRes.json();
     const wastesData = await wastesRes.json();
     
-    // 工事プルダウン(重複なし)を作成
     if (contractsData.ok) {
       myContracts = contractsData.contracts;
       const uniqueProjects = [...new Set(myContracts.map(c => c.projectName))];
@@ -421,7 +512,6 @@ async function openApplyForm() {
       }
     }
     
-    // 廃棄物チップを準備
     if (wastesData.ok) {
       wasteList = wastesData.wastes;
       renderWasteChips();
@@ -431,7 +521,6 @@ async function openApplyForm() {
   }
 }
 
-// ===== 工事が変わったら契約プルダウンを更新 =====
 function onProjectChange() {
   const projectName = val('a_project');
   const select = document.getElementById('a_contract');
@@ -451,12 +540,10 @@ function onProjectChange() {
     filtered.map(c => `<option value="${c.id}">${c.transporterName} → ${c.disposerName}</option>`).join('');
 }
 
-// ===== 廃棄物チップの描画 =====
 function renderWasteChips() {
   const selectedEl = document.getElementById('a_wasteSelected');
   const availableEl = document.getElementById('a_wasteAvailable');
   
-  // 選択済み
   if (selectedWastes.length === 0) {
     selectedEl.innerHTML = '<span class="chip-empty">タップして追加してください</span>';
   } else {
@@ -465,7 +552,6 @@ function renderWasteChips() {
     ).join('');
   }
   
-  // 追加可能(まだ選択されていないもの)
   const available = wasteList.filter(w => !selectedWastes.includes(w.name));
   if (available.length === 0) {
     availableEl.innerHTML = '<span class="chip-empty">すべて選択済み</span>';
@@ -492,7 +578,6 @@ function escapeAttr(s) {
   return String(s).replace(/'/g, "\\'");
 }
 
-// ===== 申請フォーム送信 =====
 async function submitApply() {
   const projectName = val('a_project');
   const contractId = val('a_contract');
