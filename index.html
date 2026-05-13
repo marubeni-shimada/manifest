@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>マニフェスト管理</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   * { box-sizing: border-box; }
   body { font-family: -apple-system, "Hiragino Sans", sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #333; }
@@ -112,7 +113,45 @@
 
 <script>
 // ===== 設定 =====
+const LIFF_ID = '2009834318-xkka6j2s';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02rDkgXBj2B6289YMhmi7C9lXCKEIbrfXNGW3AU6Qe7L2_jPg/exec';
+
+let userProfile = null;
+
+// ===== LIFF初期化 =====
+async function init() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+    userProfile = await liff.getProfile();
+    document.getElementById('userBox').textContent = 'こんにちは、' + userProfile.displayName + 'さん';
+    
+    // ユーザーをマスタに登録(初回 or 最終アクセス更新)
+    registerUser();
+  } catch (e) {
+    document.getElementById('userBox').textContent = '⚠️ LIFF初期化エラー: ' + e.message;
+  }
+}
+init();
+
+// ===== ユーザーマスタへの登録 =====
+async function registerUser() {
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'registerUser',
+        userId: userProfile.userId,
+        displayName: userProfile.displayName
+      })
+    });
+  } catch (e) {
+    console.error('user register failed:', e);
+  }
+}
 
 // ===== 画面切り替え =====
 function showPage(name) {
@@ -125,8 +164,8 @@ function showPage(name) {
 async function submitContract() {
   const payload = {
     action: 'submitContract',
-    applicantName: 'テストユーザー',
-    userId: 'test-user-id',
+    applicantName: userProfile ? userProfile.displayName : '不明',
+    userId: userProfile ? userProfile.userId : '',
     projectName: val('c_projectName'),
     company: val('c_company'),
     person: val('c_person'),
