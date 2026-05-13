@@ -53,7 +53,7 @@
     <div class="arrow">›</div>
   </button>
   
-  <button class="menu-btn">
+  <button class="menu-btn" onclick="openApplyForm()">
     <div class="icon-circle">🚚</div>
     <div class="label">
       <div class="title">マニフェスト申請</div>
@@ -109,6 +109,48 @@
   <textarea id="c_note"></textarea>
   
   <button class="submit" onclick="submitContract()">送信する</button>
+</div
+
+ <!-- ===== マニフェスト申請フォーム画面 ===== -->
+<div id="page-apply" class="page">
+  <div class="header">
+    <button class="back-btn" onclick="showPage('menu')">‹</button>
+    <h1>マニフェスト申請</h1>
+  </div>
+  
+  <label>工事名 <span class="req">*</span></label>
+  <select id="a_project">
+    <option value="">読み込み中...</option>
+  </select>
+  
+  <label>廃棄物の種類 <span class="req">*</span></label>
+  <select id="a_wasteType">
+    <option value="">選択してください</option>
+    <option>がれき類</option>
+    <option>木くず</option>
+    <option>廃プラスチック類</option>
+    <option>金属くず</option>
+    <option>ガラスくず・陶磁器くず</option>
+    <option>混合廃棄物</option>
+    <option>その他</option>
+  </select>
+  
+  <label>数量 <span class="req">*</span></label>
+  <input id="a_quantity" type="text" placeholder="例:2t、5m³">
+  
+  <label>排出予定日 <span class="req">*</span></label>
+  <input id="a_dischargeDate" type="date">
+  
+  <label>収集運搬業者</label>
+  <input id="a_transporter" type="text">
+  
+  <label>処分業者</label>
+  <input id="a_disposer" type="text">
+  
+  <label>備考</label>
+  <textarea id="a_note"></textarea>
+  
+  <button class="submit" onclick="submitApply()">送信する</button>
 </div>
 
 <script>
@@ -211,6 +253,91 @@ function clearContractForm() {
   ['c_projectName','c_company','c_person','c_contact','c_wasteType','c_quantity','c_startDate','c_note']
     .forEach(id => document.getElementById(id).value = '');
 }
+
+ // ===== 申請フォームを開く(工事プルダウン読み込み)=====
+async function openApplyForm() {
+  showPage('apply');
+  const select = document.getElementById('a_project');
+  select.innerHTML = '<option value="">読み込み中...</option>';
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'getMyContracts',
+        userId: userProfile ? userProfile.userId : ''
+      })
+    });
+    const data = await res.json();
+    
+    if (data.ok && data.contracts.length > 0) {
+      select.innerHTML = '<option value="">選択してください</option>' +
+        data.contracts.map(c => `<option value="${c.id}|${c.projectName}">${c.projectName}</option>`).join('');
+    } else {
+      select.innerHTML = '<option value="">契約済みの工事がありません</option>';
+    }
+  } catch (e) {
+    select.innerHTML = '<option value="">読み込みエラー</option>';
+  }
+}
+
+// ===== 申請フォーム送信 =====
+async function submitApply() {
+  const projectValue = val('a_project');
+  if (!projectValue) {
+    alert('工事を選択してください');
+    return;
+  }
+  const [contractId, projectName] = projectValue.split('|');
+  
+  const payload = {
+    action: 'submitApply',
+    applicantName: userProfile ? userProfile.displayName : '不明',
+    userId: userProfile ? userProfile.userId : '',
+    contractId: contractId,
+    projectName: projectName,
+    wasteType: val('a_wasteType'),
+    quantity: val('a_quantity'),
+    dischargeDate: val('a_dischargeDate'),
+    transporter: val('a_transporter'),
+    disposer: val('a_disposer'),
+    note: val('a_note')
+  };
+  
+  if (!payload.wasteType || !payload.quantity || !payload.dischargeDate) {
+    alert('必須項目(*)を入力してください');
+    return;
+  }
+  
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      alert('✅ マニフェスト申請を送信しました\n申請ID: ' + data.id);
+      clearApplyForm();
+      showPage('menu');
+    } else {
+      alert('❌ 送信失敗: ' + data.error);
+    }
+  } catch (e) {
+    alert('❌ 通信エラー: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = '送信する';
+}
+
+function clearApplyForm() {
+  ['a_project','a_wasteType','a_quantity','a_dischargeDate','a_transporter','a_disposer','a_note']
+    .forEach(id => document.getElementById(id).value = '');
+}
+
 </script>
 
 </body>
