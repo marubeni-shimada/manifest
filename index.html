@@ -109,9 +109,9 @@
   <textarea id="c_note"></textarea>
   
   <button class="submit" onclick="submitContract()">送信する</button>
-</div
+</div>
 
- <!-- ===== マニフェスト申請フォーム画面 ===== -->
+<!-- ===== マニフェスト申請フォーム画面 ===== -->
 <div id="page-apply" class="page">
   <div class="header">
     <button class="back-btn" onclick="showPage('menu')">‹</button>
@@ -133,6 +133,13 @@
     <option>ガラスくず・陶磁器くず</option>
     <option>混合廃棄物</option>
     <option>その他</option>
+  </select>
+  
+  <label>筋の有無</label>
+  <select id="a_rebar">
+    <option value="該当なし">該当なし</option>
+    <option value="有筋">有筋</option>
+    <option value="無筋">無筋</option>
   </select>
   
   <label>数量 <span class="req">*</span></label>
@@ -170,8 +177,6 @@ async function init() {
     }
     userProfile = await liff.getProfile();
     document.getElementById('userBox').textContent = 'こんにちは、' + userProfile.displayName + 'さん';
-    
-    // ユーザーをマスタに登録(初回 or 最終アクセス更新)
     registerUser();
   } catch (e) {
     document.getElementById('userBox').textContent = '⚠️ LIFF初期化エラー: ' + e.message;
@@ -254,7 +259,7 @@ function clearContractForm() {
     .forEach(id => document.getElementById(id).value = '');
 }
 
- // ===== 申請フォームを開く(工事プルダウン読み込み)=====
+// ===== 申請フォームを開く(工事プルダウン読み込み)=====
 async function openApplyForm() {
   showPage('apply');
   const select = document.getElementById('a_project');
@@ -297,6 +302,7 @@ async function submitApply() {
     contractId: contractId,
     projectName: projectName,
     wasteType: val('a_wasteType'),
+    rebar: val('a_rebar'),
     quantity: val('a_quantity'),
     dischargeDate: val('a_dischargeDate'),
     transporter: val('a_transporter'),
@@ -336,8 +342,8 @@ async function submitApply() {
 function clearApplyForm() {
   ['a_project','a_wasteType','a_quantity','a_dischargeDate','a_transporter','a_disposer','a_note']
     .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('a_rebar').value = '該当なし';
 }
-
 </script>
 
 </body>
