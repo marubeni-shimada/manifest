@@ -107,14 +107,70 @@
   <label>備考</label>
   <textarea id="c_note"></textarea>
   
-  <button class="submit">送信する</button>
+  <button class="submit" onclick="submitContract()">送信する</button>
 </div>
 
 <script>
+// ===== 設定 =====
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02rDkgXBj2B6289YMhmi7C9lXCKEIbrfXNGW3AU6Qe7L2_jPg/exec';
+
+// ===== 画面切り替え =====
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   window.scrollTo(0, 0);
+}
+
+// ===== 契約フォーム送信 =====
+async function submitContract() {
+  const payload = {
+    action: 'submitContract',
+    applicantName: 'テストユーザー',
+    userId: 'test-user-id',
+    projectName: val('c_projectName'),
+    company: val('c_company'),
+    person: val('c_person'),
+    contact: val('c_contact'),
+    wasteType: val('c_wasteType'),
+    quantity: val('c_quantity'),
+    startDate: val('c_startDate'),
+    note: val('c_note')
+  };
+  
+  if (!payload.projectName || !payload.company || !payload.person || !payload.contact) {
+    alert('必須項目(*)を入力してください');
+    return;
+  }
+  
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      alert('✅ 契約依頼を送信しました\n依頼ID: ' + data.id);
+      clearContractForm();
+      showPage('menu');
+    } else {
+      alert('❌ 送信失敗: ' + data.error);
+    }
+  } catch (e) {
+    alert('❌ 通信エラー: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = '送信する';
+}
+
+function val(id) { return document.getElementById(id).value.trim(); }
+
+function clearContractForm() {
+  ['c_projectName','c_company','c_person','c_contact','c_wasteType','c_quantity','c_startDate','c_note']
+    .forEach(id => document.getElementById(id).value = '');
 }
 </script>
 
