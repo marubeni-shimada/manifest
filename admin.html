@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>マニフェスト管理 - 事務</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; margin: 0; padding: 0; background: #F0F4F5; color: #0F172A; -webkit-font-smoothing: antialiased; }
+  
+  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  
+  .header { background: linear-gradient(135deg, #0F766E 0%, #0E7490 100%); color: white; padding: 18px 24px; border-radius: 12px 12px 0 0; }
+  .header .eyebrow { font-size: 10px; opacity: 0.85; letter-spacing: 1px; font-weight: 500; }
+  .header h1 { font-size: 18px; margin: 2px 0 0; font-weight: 600; }
+  
+  .tabs { display: flex; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
+  .tab { padding: 14px 24px; font-size: 13px; color: #64748B; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab:hover { color: #0F766E; }
+  .tab.active { color: #0F766E; font-weight: 600; border-bottom-color: #0F766E; background: white; }
+  
+  .panel { background: white; padding: 24px; border-radius: 0 0 12px 12px; min-height: 400px; }
+  .panel.hidden { display: none; }
+  
+  .placeholder { padding: 60px 20px; text-align: center; color: #94A3B8; font-size: 14px; }
+  
+  /* 認証エラー画面 */
+  .auth-error { max-width: 480px; margin: 80px auto; background: white; padding: 32px; border-radius: 12px; text-align: center; box-shadow: 0 1px 3px rgba(15,23,42,0.06); }
+  .auth-error .icon { font-size: 40px; margin-bottom: 12px; }
+  .auth-error h2 { font-size: 18px; margin: 0 0 8px; color: #0F172A; }
+  .auth-error p { font-size: 13px; color: #64748B; margin: 0; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<!-- 認証エラー画面(トークンが無効・未指定のとき表示) -->
+<div id="authError" class="auth-error" style="display:none;">
+  <div class="icon">🔒</div>
+  <h2>アクセスできません</h2>
+  <p>このページは事務担当者専用です。<br>正しいリンクからアクセスしてください。</p>
+</div>
+
+<!-- 管理画面本体 -->
+<div id="mainApp" class="container" style="display:none;">
+
+  <div class="header">
+    <div class="eyebrow">ADMIN CONSOLE</div>
+    <h1>マニフェスト管理 - 事務</h1>
+  </div>
+  
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('applies')">📋 申請一覧</div>
+    <div class="tab" onclick="switchTab('wastes')">📦 廃棄物マスタ</div>
+    <div class="tab" onclick="switchTab('vendors')">🚚 業者マスタ</div>
+  </div>
+  
+  <div id="panel-applies" class="panel">
+    <div class="placeholder">申請一覧(これから実装します)</div>
+  </div>
+  
+  <div id="panel-wastes" class="panel hidden">
+    <div class="placeholder">廃棄物マスタ(これから実装します)</div>
+  </div>
+  
+  <div id="panel-vendors" class="panel hidden">
+    <div class="placeholder">業者マスタ(これから実装します)</div>
+  </div>
+
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02rDkgXBj2B6289YMhmi7C9lXCKEIbrfXNGW3AU6Qe7L2_jPg/exec';
+
+// ===== トークン確認 =====
+const params = new URLSearchParams(window.location.search);
+const token = params.get('token');
+
+if (!token) {
+  document.getElementById('authError').style.display = 'block';
+} else {
+  // トークンの正当性はサーバー側で検証する
+  document.getElementById('mainApp').style.display = 'block';
+  // 初回タブを開く処理(後で実装)
+}
+
+// ===== タブ切り替え =====
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+  document.getElementById('panel-' + name).classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>
