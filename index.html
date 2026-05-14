@@ -86,6 +86,13 @@
   .info-value { color: #0F172A; }
   
   .submenu-note { font-size: 12px; color: #64748B; margin-bottom: 14px; text-align: center; }
+  
+  .add-new-btn { width: 100%; background: white; border: 1px dashed #0F766E; color: #0F766E; border-radius: 9px; padding: 10px; font-size: 13px; cursor: pointer; margin-top: 6px; font-weight: 500; }
+  .add-new-btn:active { background: #F0FDFA; }
+  .new-project-row { display: flex; gap: 8px; margin-top: 6px; }
+  .new-project-row input { flex: 1; }
+  .new-project-row button { padding: 0 16px; background: #0F766E; color: white; border: none; border-radius: 9px; font-size: 13px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+  .new-project-row button.cancel { background: #E2E8F0; color: #475569; }
 </style>
 </head>
 <body>
@@ -147,7 +154,6 @@
   </div>
   <div class="content">
     <div class="submenu-note">どの申請を行いますか?</div>
-    
     <button class="menu-btn" onclick="openApplyFormContract()">
       <div class="icon-box icon-blue">📋</div>
       <div class="text">
@@ -156,7 +162,6 @@
       </div>
       <div class="arrow">›</div>
     </button>
-    
     <button class="menu-btn" onclick="openApplyFormEmpty()">
       <div class="icon-box icon-orange">🚛</div>
       <div class="text">
@@ -165,11 +170,10 @@
       </div>
       <div class="arrow">›</div>
     </button>
-    
     <button class="menu-btn" onclick="openApplyFormBlank()">
       <div class="icon-box icon-gray">📃</div>
       <div class="text">
-        <div class="title">紙マニフェストの申請</div>
+        <div class="title">申請用紙のみ(白紙)</div>
         <div class="desc">枚数だけで申請</div>
       </div>
       <div class="arrow">›</div>
@@ -189,7 +193,15 @@
   <div class="content">
     <div class="field">
       <label>工事名 <span class="req">●</span></label>
-      <input id="c_projectName" type="text" placeholder="例:〇〇ビル解体工事">
+      <select id="c_projectSelect">
+        <option value="">読み込み中...</option>
+      </select>
+      <button class="add-new-btn" id="c_addProjectBtn" onclick="showNewProjectInput()">+ 新しい工事を追加</button>
+      <div class="new-project-row" id="c_newProjectRow" style="display:none;">
+        <input id="c_newProjectName" type="text" placeholder="新しい工事名">
+        <button onclick="addNewProject()">追加</button>
+        <button class="cancel" onclick="cancelNewProject()">×</button>
+      </div>
     </div>
     <div class="field">
       <label>排出事業者名 <span class="req">●</span></label>
@@ -324,7 +336,7 @@
     <button class="back-btn" onclick="showPage('applyMenu')">‹</button>
     <div>
       <div class="eyebrow">BLANK</div>
-      <h1>紙マニフェストの申請(白紙)</h1>
+      <h1>申請用紙のみ(白紙)</h1>
     </div>
   </div>
   <div class="content">
@@ -370,6 +382,7 @@ let contractWastes = [];
 let allTransporters = [];
 let allDisposers = [];
 let currentPickerType = null;
+let projectList = [];
 
 async function init() {
   try {
@@ -405,16 +418,78 @@ function showPage(name) {
 async function openContractForm() {
   showPage('contract');
   contractWastes = [];
+  cancelNewProject();
   try {
-    const [vRes, wRes] = await Promise.all([
+    const [vRes, wRes, pRes] = await Promise.all([
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getVendors' }) }),
-      fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getWastes' }) })
+      fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getWastes' }) }),
+      fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getProjects' }) })
     ]);
     const vData = await vRes.json();
     const wData = await wRes.json();
+    const pData = await pRes.json();
     if (vData.ok) { allTransporters = vData.transporters; allDisposers = vData.disposers; }
     if (wData.ok) { wasteList = wData.wastes; renderContractWastes(); }
+    if (pData.ok) { projectList = pData.projects; renderContractProjectOptions(); }
   } catch (e) { console.error(e); }
+}
+
+function renderContractProjectOptions() {
+  const select = document.getElementById('c_projectSelect');
+  // 進行中の工事のみ
+  const active = projectList.filter(p => p.status === '進行中');
+  if (active.length > 0) {
+    select.innerHTML = '<option value="">選択してください</option>' +
+      active.map(p => `<option value="${escapeAttr(p.name)}">${escapeHtml(p.name)}</option>`).join('');
+  } else {
+    select.innerHTML = '<option value="">登録された工事がありません</option>';
+  }
+}
+
+function showNewProjectInput() {
+  document.getElementById('c_newProjectRow').style.display = 'flex';
+  document.getElementById('c_addProjectBtn').style.display = 'none';
+  document.getElementById('c_newProjectName').focus();
+}
+
+function cancelNewProject() {
+  document.getElementById('c_newProjectRow').style.display = 'none';
+  document.getElementById('c_addProjectBtn').style.display = 'block';
+  document.getElementById('c_newProjectName').value = '';
+}
+
+async function addNewProject() {
+  const name = document.getElementById('c_newProjectName').value.trim();
+  if (!name) { alert('工事名を入力してください'); return; }
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'addProject',
+        byUser: true,
+        name: name,
+        registeredBy: userProfile ? userProfile.displayName : '現場'
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      // マスタに追加成功 → リストに足してプルダウンで選択状態に
+      projectList.push({ id: data.id, name: name, status: '進行中' });
+      renderContractProjectOptions();
+      document.getElementById('c_projectSelect').value = name;
+      cancelNewProject();
+    } else if (data.existing) {
+      // すでに同名がある → それを選択
+      document.getElementById('c_projectSelect').value = name;
+      cancelNewProject();
+      alert('その工事は既に登録されています。選択しました。');
+    } else {
+      alert('エラー: ' + data.error);
+    }
+  } catch (e) {
+    alert('通信エラー: ' + e.message);
+  }
 }
 
 function renderContractWastes() {
@@ -496,13 +571,15 @@ function selectVendor(id, name) {
 async function submitContract() {
   const transId = val('c_transporterId');
   const dispId = val('c_disposerId');
+  const projectName = val('c_projectSelect');
+  if (!projectName) { alert('工事を選択してください'); return; }
   if (!transId || !dispId) { alert('収集運搬業者と処分業者を選択してください'); return; }
   const wastesStr = contractWastes.filter(w => w.name).map(w => `${w.name}:${w.quantity || ''}${w.unit || ''}`).join(', ');
   const payload = {
     action: 'submitContract',
     applicantName: userProfile ? userProfile.displayName : '不明',
     userId: userProfile ? userProfile.userId : '',
-    projectName: val('c_projectName'), company: val('c_company'),
+    projectName: projectName, company: val('c_company'),
     person: val('c_person'), contact: val('c_contact'),
     transporterId: transId, transporterName: val('c_transporterName'),
     disposerId: dispId, disposerName: val('c_disposerName'),
@@ -511,7 +588,7 @@ async function submitContract() {
     periodStart: val('c_periodStart'), periodEnd: val('c_periodEnd'),
     note: val('c_note')
   };
-  if (!payload.projectName || !payload.company || !payload.person || !payload.contact) {
+  if (!payload.company || !payload.person || !payload.contact) {
     alert('必須項目(●)を入力してください'); return;
   }
   const btn = event.target;
@@ -531,9 +608,10 @@ async function submitContract() {
 function val(id) { return document.getElementById(id).value.trim(); }
 
 function clearContractForm() {
-  ['c_projectName','c_person','c_contact','c_startDate','c_periodStart','c_periodEnd','c_note']
+  ['c_person','c_contact','c_startDate','c_periodStart','c_periodEnd','c_note']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('c_company').value = '株式会社丸紅';
+  document.getElementById('c_projectSelect').value = '';
   ['c_transporterId','c_transporterName','c_disposerId','c_disposerName']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('c_transporterLabel').textContent = 'タップして選択';
@@ -544,6 +622,7 @@ function clearContractForm() {
   document.querySelector('#c_disposerBtn .icon').textContent = '🔍';
   contractWastes = [];
   renderContractWastes();
+  cancelNewProject();
 }
 
 // ===== ① 契約あり 申請フォーム =====
@@ -553,7 +632,6 @@ async function openApplyFormContract() {
   document.getElementById('a_contractInfo').innerHTML = '';
   document.getElementById('a_count').value = '';
   document.getElementById('a_note').value = '';
-  
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
@@ -677,7 +755,6 @@ async function submitApplyBlank() {
   await sendApply(payload, event.target);
 }
 
-// ===== 共通:申請送信 =====
 async function sendApply(payload, btn) {
   btn.disabled = true; btn.textContent = '送信中...';
   try {
