@@ -8,7 +8,7 @@
   * { box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; margin: 0; padding: 0; background: #F0F4F5; color: #0F172A; -webkit-font-smoothing: antialiased; }
   
-  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
   
   .header { background: linear-gradient(135deg, #0F766E 0%, #0E7490 100%); color: white; padding: 18px 24px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
   .header .title-block .eyebrow { font-size: 10px; opacity: 0.85; letter-spacing: 1px; font-weight: 500; }
@@ -20,7 +20,7 @@
   .header .operator-block input:focus, .header .operator-block select:focus { outline: none; background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.5); }
   
   .tabs { display: flex; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; flex-wrap: wrap; }
-  .tab { padding: 14px 20px; font-size: 13px; color: #64748B; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab { padding: 14px 18px; font-size: 13px; color: #64748B; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.15s; }
   .tab:hover { color: #0F766E; }
   .tab.active { color: #0F766E; font-weight: 600; border-bottom-color: #0F766E; background: white; }
   
@@ -46,10 +46,10 @@
   
   .count-label { font-size: 11px; color: #64748B; margin-bottom: 8px; }
   
-  .table-wrap { border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; }
+  .table-wrap { border: 1px solid #E2E8F0; border-radius: 8px; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead tr { background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
-  th { padding: 10px 12px; text-align: left; font-weight: 600; color: #475569; font-size: 12px; }
+  th { padding: 10px 12px; text-align: left; font-weight: 600; color: #475569; font-size: 12px; white-space: nowrap; }
   tbody tr { border-bottom: 1px solid #F1F5F9; }
   tbody tr:last-child { border-bottom: none; }
   tbody tr:hover { background: #FAFBFC; }
@@ -65,6 +65,11 @@
   .badge-type-disp { background: #E0E7FF; color: #4338CA; }
   .badge-progress { background: #DBEAFE; color: #1E40AF; }
   .badge-finished { background: #F1EFE8; color: #5F5E5A; }
+  /* 契約ステータス */
+  .badge-c-received { background: #FEF3C7; color: #92400E; }
+  .badge-c-drafting { background: #DBEAFE; color: #1E40AF; }
+  .badge-c-done { background: #E1F5EE; color: #0F6E56; }
+  .badge-c-revised { background: #F1EFE8; color: #5F5E5A; }
   
   .empty { padding: 40px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   .loading { padding: 40px 20px; text-align: center; color: #64748B; font-size: 13px; }
@@ -76,9 +81,13 @@
   .row-action.complete { background: linear-gradient(135deg, #06C755 0%, #0F766E 100%); color: white; border: none; font-weight: 600; }
   .row-action.complete:hover { opacity: 0.9; }
   
+  /* 契約一覧のインライン ステータス変更 select */
+  .status-select { padding: 4px 8px; border: 1px solid #CBD5E1; border-radius: 5px; font-size: 11px; font-family: inherit; background: white; cursor: pointer; }
+  .status-select:focus { outline: none; border-color: #0F766E; }
+  
   .modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
   .modal-bg.active { display: flex; }
-  .modal-box { background: white; border-radius: 12px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 10px 40px rgba(15,23,42,0.2); max-height: 90vh; overflow-y: auto; }
+  .modal-box { background: white; border-radius: 12px; padding: 24px; max-width: 520px; width: 100%; box-shadow: 0 10px 40px rgba(15,23,42,0.2); max-height: 90vh; overflow-y: auto; }
   .modal-title { font-size: 16px; font-weight: 600; margin: 0 0 16px; }
   .modal-field { margin-bottom: 14px; }
   .modal-field label { display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 5px; letter-spacing: 0.5px; }
@@ -95,6 +104,11 @@
   .confirm-msg { font-size: 13px; color: #475569; line-height: 1.6; margin: 8px 0 16px; }
   .confirm-target { background: #F8FAFC; border-radius: 6px; padding: 10px 12px; font-size: 13px; margin: 8px 0; }
   .confirm-info { background: #ECFEFF; border: 1px solid #A5F3FC; border-radius: 6px; padding: 10px 12px; font-size: 12px; margin: 8px 0; color: #0E7490; }
+  
+  /* 契約詳細モーダルの内容 */
+  .detail-grid { display: grid; grid-template-columns: 90px 1fr; gap: 6px 12px; font-size: 13px; }
+  .detail-label { color: #64748B; font-weight: 600; }
+  .detail-value { color: #0F172A; }
 </style>
 </head>
 <body>
@@ -125,6 +139,7 @@
   
   <div class="tabs">
     <div class="tab active" data-tab="applies" onclick="switchTab(this, 'applies')">📋 申請一覧</div>
+    <div class="tab" data-tab="contracts" onclick="switchTab(this, 'contracts')">📝 契約一覧</div>
     <div class="tab" data-tab="projects" onclick="switchTab(this, 'projects')">🏗️ 工事マスタ</div>
     <div class="tab" data-tab="wastes" onclick="switchTab(this, 'wastes')">📦 廃棄物マスタ</div>
     <div class="tab" data-tab="vendors" onclick="switchTab(this, 'vendors')">🚚 業者マスタ</div>
@@ -147,6 +162,26 @@
     </div>
     <div class="count-label" id="appliesCount"></div>
     <div id="appliesTableWrap"><div class="loading">読み込み中...</div></div>
+  </div>
+  
+  <!-- 契約一覧 -->
+  <div id="panel-contracts" class="panel hidden">
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="icon">🔍</span>
+        <input id="contractsSearch" type="text" placeholder="依頼ID・工事名・依頼者名で検索" oninput="renderContracts()">
+      </div>
+      <select id="contractsStatus" class="filter-select" onchange="renderContracts()">
+        <option value="">すべて</option>
+        <option value="依頼受付">依頼受付</option>
+        <option value="書類作成中">書類作成中</option>
+        <option value="契約完了">契約完了</option>
+        <option value="改定済み">改定済み</option>
+      </select>
+      <button class="refresh-btn" onclick="loadContracts()">🔄 更新</button>
+    </div>
+    <div class="count-label" id="contractsCount"></div>
+    <div id="contractsTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
   
   <!-- 工事マスタ -->
@@ -217,6 +252,17 @@
   </div>
 </div>
 
+<!-- 契約詳細モーダル -->
+<div id="contractDetailModal" class="modal-bg">
+  <div class="modal-box">
+    <div class="modal-title">契約の詳細</div>
+    <div id="contractDetailBody"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeContractDetail()">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <!-- 工事 編集モーダル -->
 <div id="projectModal" class="modal-bg">
   <div class="modal-box">
@@ -244,7 +290,6 @@
   </div>
 </div>
 
-<!-- 工事 削除確認 -->
 <div id="projectDeleteModal" class="modal-bg">
   <div class="modal-box">
     <div class="modal-title">工事を削除しますか?</div>
@@ -322,6 +367,7 @@ const params = new URLSearchParams(window.location.search);
 const TOKEN = params.get('token');
 
 let allApplies = [];
+let allContracts = [];
 let allProjects = [];
 let allWastes = [];
 let allVendors = [];
@@ -347,6 +393,7 @@ function switchTab(el, name) {
   el.classList.add('active');
   document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
   document.getElementById('panel-' + name).classList.remove('hidden');
+  if (name === 'contracts' && allContracts.length === 0) loadContracts();
   if (name === 'projects' && allProjects.length === 0) loadProjects();
   if (name === 'wastes' && allWastes.length === 0) loadWastes();
   if (name === 'vendors' && allVendors.length === 0) loadVendors();
@@ -394,6 +441,7 @@ function renderApplies() {
     return `<tr>
       <td><span class="mono">${escapeHtml(a.id)}</span></td>
       <td>${escapeHtml(a.submittedAt)}</td>
+      <td>${a.applyType ? escapeHtml(a.applyType) : '-'}</td>
       <td>${a.projectName ? escapeHtml(a.projectName) : '<span class="muted">-</span>'}</td>
       <td>${escapeHtml(a.applicantName)}</td>
       <td>${escapeHtml(a.count)}</td>
@@ -403,7 +451,7 @@ function renderApplies() {
     </tr>`;
   }).join('');
   wrap.innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>申請ID</th><th>申請日時</th><th>工事名</th><th>申請者</th><th>枚数</th><th>業者</th><th style="text-align:center;">状態</th><th style="text-align:right;">操作</th></tr></thead>
+    <thead><tr><th>申請ID</th><th>申請日時</th><th>区分</th><th>工事名</th><th>申請者</th><th>枚数</th><th>業者</th><th style="text-align:center;">状態</th><th style="text-align:right;">操作</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -429,6 +477,117 @@ async function confirmComplete() {
     else { alert('エラー: ' + data.error); }
   } catch (e) { alert('通信エラー: ' + e.message); }
 }
+
+// ============================================
+// 契約一覧
+// ============================================
+async function loadContracts() {
+  document.getElementById('contractsTableWrap').innerHTML = '<div class="loading">読み込み中...</div>';
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getAllContracts', token: TOKEN }) });
+    const data = await res.json();
+    if (!data.ok) { document.getElementById('contractsTableWrap').innerHTML = '<div class="empty">読み込みエラー: ' + (data.error || '不明') + '</div>'; return; }
+    allContracts = data.contracts || [];
+    renderContracts();
+  } catch (e) { document.getElementById('contractsTableWrap').innerHTML = '<div class="empty">通信エラー: ' + e.message + '</div>'; }
+}
+
+function contractStatusBadge(status) {
+  if (status === '依頼受付') return '<span class="badge badge-c-received">依頼受付</span>';
+  if (status === '書類作成中') return '<span class="badge badge-c-drafting">書類作成中</span>';
+  if (status === '契約完了') return '<span class="badge badge-c-done">契約完了</span>';
+  if (status === '改定済み') return '<span class="badge badge-c-revised">改定済み</span>';
+  return '<span class="badge">' + escapeHtml(status) + '</span>';
+}
+
+function renderContracts() {
+  const query = document.getElementById('contractsSearch').value.trim().toLowerCase();
+  const statusFilter = document.getElementById('contractsStatus').value;
+  let filtered = allContracts;
+  if (statusFilter) filtered = filtered.filter(c => c.status === statusFilter);
+  if (query) {
+    filtered = filtered.filter(c => 
+      (c.id && c.id.toLowerCase().includes(query)) ||
+      (c.projectName && c.projectName.toLowerCase().includes(query)) ||
+      (c.applicantName && c.applicantName.toLowerCase().includes(query))
+    );
+  }
+  document.getElementById('contractsCount').textContent = filtered.length + ' 件';
+  const wrap = document.getElementById('contractsTableWrap');
+  if (filtered.length === 0) { wrap.innerHTML = '<div class="empty">該当する契約がありません</div>'; return; }
+  
+  const rows = filtered.map(c => {
+    // 改定済み以外はステータス変更のselectを出す
+    let statusCell;
+    if (c.status === '改定済み') {
+      statusCell = contractStatusBadge(c.status);
+    } else {
+      statusCell = `<select class="status-select" onchange="changeContractStatus('${escapeAttr(c.id)}', this.value)">
+        <option value="依頼受付" ${c.status === '依頼受付' ? 'selected' : ''}>依頼受付</option>
+        <option value="書類作成中" ${c.status === '書類作成中' ? 'selected' : ''}>書類作成中</option>
+        <option value="契約完了" ${c.status === '契約完了' ? 'selected' : ''}>契約完了</option>
+      </select>`;
+    }
+    return `<tr>
+      <td><span class="mono">${escapeHtml(c.id)}</span></td>
+      <td>${escapeHtml(c.requestedAt)}</td>
+      <td>${escapeHtml(c.projectName)}</td>
+      <td>${escapeHtml(c.applicantName)}</td>
+      <td style="font-size:11px;">${escapeHtml(c.transporterName)} → ${escapeHtml(c.disposerName)}</td>
+      <td>${statusCell}</td>
+      <td>${c.operatorName ? escapeHtml(c.operatorName) : '<span class="muted">-</span>'}</td>
+      <td style="text-align:right;"><button class="row-action" onclick='openContractDetail(${JSON.stringify(c)})'>詳細</button></td>
+    </tr>`;
+  }).join('');
+  
+  wrap.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>依頼ID</th><th>依頼日時</th><th>工事名</th><th>依頼者</th><th>業者</th><th>契約状態</th><th>担当者</th><th style="text-align:right;"></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+async function changeContractStatus(id, status) {
+  const operatorName = getOperatorName();
+  if (!operatorName) {
+    alert('画面右上の「担当者」を選択してください。');
+    document.getElementById('operatorName').focus();
+    loadContracts();
+    return;
+  }
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateContractStatus', token: TOKEN, id: id, status: status, operatorName: operatorName })
+    });
+    const data = await res.json();
+    if (data.ok) { loadContracts(); }
+    else { alert('エラー: ' + data.error); loadContracts(); }
+  } catch (e) { alert('通信エラー: ' + e.message); loadContracts(); }
+}
+
+function openContractDetail(c) {
+  const body = document.getElementById('contractDetailBody');
+  body.innerHTML = `<div class="detail-grid">
+    <div class="detail-label">依頼ID</div><div class="detail-value mono">${escapeHtml(c.id)}</div>
+    <div class="detail-label">依頼日時</div><div class="detail-value">${escapeHtml(c.requestedAt)}</div>
+    <div class="detail-label">依頼者</div><div class="detail-value">${escapeHtml(c.applicantName)}</div>
+    <div class="detail-label">工事名</div><div class="detail-value">${escapeHtml(c.projectName)}</div>
+    <div class="detail-label">排出事業者</div><div class="detail-value">${escapeHtml(c.company)}</div>
+    <div class="detail-label">担当者</div><div class="detail-value">${escapeHtml(c.person)}</div>
+    <div class="detail-label">連絡先</div><div class="detail-value">${escapeHtml(c.contact)}</div>
+    <div class="detail-label">収集運搬</div><div class="detail-value">${escapeHtml(c.transporterName)}</div>
+    <div class="detail-label">処分業者</div><div class="detail-value">${escapeHtml(c.disposerName)}</div>
+    <div class="detail-label">廃棄物・数量</div><div class="detail-value">${c.wastes ? escapeHtml(c.wastes) : '-'}</div>
+    <div class="detail-label">開始希望日</div><div class="detail-value">${c.startDate ? escapeHtml(c.startDate) : '-'}</div>
+    <div class="detail-label">委託期間</div><div class="detail-value">${(c.periodStart || '-')} 〜 ${(c.periodEnd || '-')}</div>
+    <div class="detail-label">備考</div><div class="detail-value">${c.note ? escapeHtml(c.note) : '-'}</div>
+    <div class="detail-label">契約状態</div><div class="detail-value">${contractStatusBadge(c.status)}</div>
+    <div class="detail-label">処理日時</div><div class="detail-value">${c.processedAt ? escapeHtml(c.processedAt) : '-'}</div>
+    <div class="detail-label">事務担当者</div><div class="detail-value">${c.operatorName ? escapeHtml(c.operatorName) : '-'}</div>
+  </div>`;
+  document.getElementById('contractDetailModal').classList.add('active');
+}
+function closeContractDetail() { document.getElementById('contractDetailModal').classList.remove('active'); }
 
 // ============================================
 // 工事マスタ
@@ -479,7 +638,7 @@ function openProjectModal() {
   document.getElementById('projectStatus').value = '進行中';
   document.getElementById('projectNote').value = '';
   document.getElementById('projectId').value = '';
-  document.getElementById('projectStatusField').style.display = 'none';  // 新規時は状態を隠す
+  document.getElementById('projectStatusField').style.display = 'none';
   document.getElementById('projectModal').classList.add('active');
 }
 function openEditProjectModal(p) {
@@ -488,10 +647,9 @@ function openEditProjectModal(p) {
   document.getElementById('projectStatus').value = p.status || '進行中';
   document.getElementById('projectNote').value = p.note || '';
   document.getElementById('projectId').value = p.id || '';
-  document.getElementById('projectStatusField').style.display = 'block';  // 編集時は状態を表示
+  document.getElementById('projectStatusField').style.display = 'block';
   document.getElementById('projectModal').classList.add('active');
 }
-
 function closeProjectModal() { document.getElementById('projectModal').classList.remove('active'); }
 
 async function saveProject() {
@@ -504,11 +662,7 @@ async function saveProject() {
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: isEdit ? 'updateProject' : 'addProject',
-        token: TOKEN, id: id, name: name, status: status, note: note,
-        registeredBy: getOperatorName() || '事務'
-      })
+      body: JSON.stringify({ action: isEdit ? 'updateProject' : 'addProject', token: TOKEN, id: id, name: name, status: status, note: note, registeredBy: getOperatorName() || '事務' })
     });
     const data = await res.json();
     if (data.ok) { closeProjectModal(); loadProjects(); }
