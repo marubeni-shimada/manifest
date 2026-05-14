@@ -10,9 +10,14 @@
   
   .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
   
-  .header { background: linear-gradient(135deg, #0F766E 0%, #0E7490 100%); color: white; padding: 18px 24px; border-radius: 12px 12px 0 0; }
-  .header .eyebrow { font-size: 10px; opacity: 0.85; letter-spacing: 1px; font-weight: 500; }
+  .header { background: linear-gradient(135deg, #0F766E 0%, #0E7490 100%); color: white; padding: 18px 24px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .header .title-block .eyebrow { font-size: 10px; opacity: 0.85; letter-spacing: 1px; font-weight: 500; }
   .header h1 { font-size: 18px; margin: 2px 0 0; font-weight: 600; }
+  .header .operator-block { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .header .operator-block input, .header .operator-block select { padding: 6px 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); border-radius: 6px; color: white; font-size: 12px; font-family: inherit; width: 130px; }
+  .header .operator-block select option { color: #0F172A; background: white; }
+  .header .operator-block input::placeholder { color: rgba(255,255,255,0.6); }
+  .header .operator-block input:focus, .header .operator-block select:focus { outline: none; background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.5); }
   
   .tabs { display: flex; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
   .tab { padding: 14px 24px; font-size: 13px; color: #64748B; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.15s; }
@@ -62,12 +67,13 @@
   .empty { padding: 40px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   .loading { padding: 40px 20px; text-align: center; color: #64748B; font-size: 13px; }
   
-  .row-action { padding: 4px 10px; background: white; border: 1px solid #CBD5E1; border-radius: 5px; font-size: 11px; cursor: pointer; color: #475569; margin-right: 4px; }
+  .row-action { padding: 4px 10px; background: white; border: 1px solid #CBD5E1; border-radius: 5px; font-size: 11px; cursor: pointer; color: #475569; margin-right: 4px; font-family: inherit; }
   .row-action:hover { background: #F8FAFC; }
   .row-action.danger { color: #DC2626; border-color: #FECACA; }
   .row-action.danger:hover { background: #FEF2F2; }
+  .row-action.complete { background: linear-gradient(135deg, #06C755 0%, #0F766E 100%); color: white; border: none; font-weight: 600; }
+  .row-action.complete:hover { opacity: 0.9; }
   
-  /* モーダル */
   .modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
   .modal-bg.active { display: flex; }
   .modal-box { background: white; border-radius: 12px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 10px 40px rgba(15,23,42,0.2); max-height: 90vh; overflow-y: auto; }
@@ -85,7 +91,8 @@
   .modal-btn.delete { background: #DC2626; color: white; font-weight: 600; }
   
   .confirm-msg { font-size: 13px; color: #475569; line-height: 1.6; margin: 8px 0 16px; }
-  .confirm-target { background: #F8FAFC; border-radius: 6px; padding: 8px 12px; font-size: 13px; margin: 8px 0; }
+  .confirm-target { background: #F8FAFC; border-radius: 6px; padding: 10px 12px; font-size: 13px; margin: 8px 0; }
+  .confirm-info { background: #ECFEFF; border: 1px solid #A5F3FC; border-radius: 6px; padding: 10px 12px; font-size: 12px; margin: 8px 0; color: #0E7490; }
 </style>
 </head>
 <body>
@@ -99,8 +106,19 @@
 <div id="mainApp" class="container" style="display:none;">
 
   <div class="header">
-    <div class="eyebrow">ADMIN CONSOLE</div>
-    <h1>マニフェスト管理 - 事務</h1>
+    <div class="title-block">
+      <div class="eyebrow">ADMIN CONSOLE</div>
+      <h1>マニフェスト管理 - 事務</h1>
+    </div>
+    <div class="operator-block">
+      <span>担当者:</span>
+      <select id="operatorName" onchange="saveOperatorName()">
+        <option value="">選択してください</option>
+        <option value="岡野">岡野</option>
+        <option value="大石">大石</option>
+        <option value="小長谷">小長谷</option>
+      </select>
+    </div>
   </div>
   
   <div class="tabs">
@@ -109,7 +127,6 @@
     <div class="tab" data-tab="vendors" onclick="switchTab(this, 'vendors')">🚚 業者マスタ</div>
   </div>
   
-  <!-- 申請一覧 -->
   <div id="panel-applies" class="panel">
     <div class="filter-bar">
       <div class="search-wrap">
@@ -128,7 +145,6 @@
     <div id="appliesTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
   
-  <!-- 廃棄物マスタ -->
   <div id="panel-wastes" class="panel hidden">
     <div class="filter-bar">
       <div class="search-wrap">
@@ -142,7 +158,6 @@
     <div id="wastesTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
   
-  <!-- 業者マスタ -->
   <div id="panel-vendors" class="panel hidden">
     <div class="filter-bar">
       <div class="search-wrap">
@@ -163,7 +178,19 @@
 
 </div>
 
-<!-- 廃棄物 編集モーダル -->
+<div id="completeModal" class="modal-bg">
+  <div class="modal-box">
+    <div class="modal-title">この申請を完了にしますか?</div>
+    <div class="confirm-msg">JWNET登録が終わってからボタンを押してください。<br>申請者本人にLINE通知が送られます。</div>
+    <div class="confirm-target" id="completeTarget"></div>
+    <div class="confirm-info" id="completeInfo"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeCompleteModal()">キャンセル</button>
+      <button class="modal-btn save" onclick="confirmComplete()">完了にする</button>
+    </div>
+  </div>
+</div>
+
 <div id="wasteModal" class="modal-bg">
   <div class="modal-box">
     <div class="modal-title" id="wasteModalTitle">廃棄物を追加</div>
@@ -183,7 +210,6 @@
   </div>
 </div>
 
-<!-- 廃棄物 削除確認 -->
 <div id="wasteDeleteModal" class="modal-bg">
   <div class="modal-box">
     <div class="modal-title">廃棄物を削除しますか?</div>
@@ -196,7 +222,6 @@
   </div>
 </div>
 
-<!-- 業者 編集モーダル -->
 <div id="vendorModal" class="modal-bg">
   <div class="modal-box">
     <div class="modal-title" id="vendorModalTitle">業者を追加</div>
@@ -238,7 +263,6 @@
   </div>
 </div>
 
-<!-- 業者 削除確認 -->
 <div id="vendorDeleteModal" class="modal-bg">
   <div class="modal-box">
     <div class="modal-title">業者を削除しますか?</div>
@@ -265,7 +289,23 @@ if (!TOKEN) {
   document.getElementById('authError').style.display = 'block';
 } else {
   document.getElementById('mainApp').style.display = 'block';
+  loadOperatorName();
   loadApplies();
+}
+
+function loadOperatorName() {
+  try {
+    const saved = localStorage.getItem('mnfst_operator_name') || '';
+    document.getElementById('operatorName').value = saved;
+  } catch (e) {}
+}
+function saveOperatorName() {
+  try {
+    localStorage.setItem('mnfst_operator_name', document.getElementById('operatorName').value);
+  } catch (e) {}
+}
+function getOperatorName() {
+  return document.getElementById('operatorName').value.trim();
 }
 
 function switchTab(el, name) {
@@ -273,21 +313,14 @@ function switchTab(el, name) {
   el.classList.add('active');
   document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
   document.getElementById('panel-' + name).classList.remove('hidden');
-  
   if (name === 'wastes' && allWastes.length === 0) loadWastes();
   if (name === 'vendors' && allVendors.length === 0) loadVendors();
 }
 
-// ============================================
-// 申請一覧
-// ============================================
 async function loadApplies() {
   document.getElementById('appliesTableWrap').innerHTML = '<div class="loading">読み込み中...</div>';
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'getAllApplies', token: TOKEN })
-    });
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getAllApplies', token: TOKEN }) });
     const data = await res.json();
     if (!data.ok) {
       document.getElementById('appliesTableWrap').innerHTML = '<div class="empty">読み込みエラー: ' + (data.error || '不明') + '</div>';
@@ -326,6 +359,9 @@ function renderApplies() {
     const badgeClass = a.status === '完了' ? 'badge-done' 
       : a.status === 'キャンセル' ? 'badge-cancel' 
       : 'badge-pending';
+    const actionCell = a.status === '申請中'
+      ? `<button class="row-action complete" onclick="openCompleteModal('${escapeAttr(a.id)}','${escapeAttr(a.projectName)}','${escapeAttr(a.applicantName)}')">✓ 完了にする</button>`
+      : (a.operatorName ? '<span style="font-size:11px; color:#94A3B8;">' + escapeHtml(a.operatorName) + '</span>' : '');
     return `<tr>
       <td><span class="mono">${escapeHtml(a.id)}</span></td>
       <td>${escapeHtml(a.submittedAt)}</td>
@@ -334,17 +370,50 @@ function renderApplies() {
       <td>${escapeHtml(a.count)}</td>
       <td>${vendorCell}</td>
       <td style="text-align:center;"><span class="badge ${badgeClass}">${escapeHtml(a.status)}</span></td>
+      <td style="text-align:right;">${actionCell}</td>
     </tr>`;
   }).join('');
   wrap.innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>申請ID</th><th>申請日時</th><th>工事名</th><th>申請者</th><th>枚数</th><th>業者</th><th style="text-align:center;">状態</th></tr></thead>
+    <thead><tr><th>申請ID</th><th>申請日時</th><th>工事名</th><th>申請者</th><th>枚数</th><th>業者</th><th style="text-align:center;">状態</th><th style="text-align:right;">操作</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
 
-// ============================================
-// 廃棄物マスタ
-// ============================================
+let completeTargetId = null;
+function openCompleteModal(id, projectName, applicantName) {
+  const operatorName = getOperatorName();
+  if (!operatorName) {
+    alert('画面右上の「担当者」を選択してください。');
+    document.getElementById('operatorName').focus();
+    return;
+  }
+  completeTargetId = id;
+  document.getElementById('completeTarget').innerHTML = 
+    '<strong>' + escapeHtml(projectName) + '</strong><br>' +
+    '<span style="font-size:11px; color:#64748B;">申請者:' + escapeHtml(applicantName) + ' / ID:' + escapeHtml(id) + '</span>';
+  document.getElementById('completeInfo').innerHTML = 
+    '👤 担当者として「<strong>' + escapeHtml(operatorName) + '</strong>」さんが記録されます';
+  document.getElementById('completeModal').classList.add('active');
+}
+function closeCompleteModal() {
+  document.getElementById('completeModal').classList.remove('active');
+  completeTargetId = null;
+}
+async function confirmComplete() {
+  if (!completeTargetId) return;
+  const operatorName = getOperatorName();
+  if (!operatorName) { alert('担当者を選択してください'); return; }
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'completeApply', token: TOKEN, id: completeTargetId, operatorName: operatorName })
+    });
+    const data = await res.json();
+    if (data.ok) { closeCompleteModal(); loadApplies(); }
+    else { alert('エラー: ' + data.error); }
+  } catch (e) { alert('通信エラー: ' + e.message); }
+}
+
 async function loadWastes() {
   document.getElementById('wastesTableWrap').innerHTML = '<div class="loading">読み込み中...</div>';
   try {
@@ -399,7 +468,6 @@ function openWasteModal() {
   document.getElementById('wasteOldName').value = '';
   document.getElementById('wasteModal').classList.add('active');
 }
-
 function openEditWasteModal(code, name) {
   document.getElementById('wasteModalTitle').textContent = '廃棄物を編集';
   document.getElementById('wasteCode').value = code;
@@ -407,10 +475,7 @@ function openEditWasteModal(code, name) {
   document.getElementById('wasteOldName').value = name;
   document.getElementById('wasteModal').classList.add('active');
 }
-
-function closeWasteModal() {
-  document.getElementById('wasteModal').classList.remove('active');
-}
+function closeWasteModal() { document.getElementById('wasteModal').classList.remove('active'); }
 
 async function saveWaste() {
   const code = document.getElementById('wasteCode').value.trim();
@@ -421,16 +486,11 @@ async function saveWaste() {
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: isEdit ? 'updateWaste' : 'addWaste',
-        token: TOKEN, code: code, name: name, oldName: oldName
-      })
+      body: JSON.stringify({ action: isEdit ? 'updateWaste' : 'addWaste', token: TOKEN, code: code, name: name, oldName: oldName })
     });
     const data = await res.json();
-    if (data.ok) {
-      closeWasteModal();
-      loadWastes();
-    } else { alert('エラー: ' + data.error); }
+    if (data.ok) { closeWasteModal(); loadWastes(); }
+    else { alert('エラー: ' + data.error); }
   } catch (e) { alert('通信エラー: ' + e.message); }
 }
 
@@ -440,35 +500,21 @@ function openDeleteWasteModal(name) {
   document.getElementById('wasteDeleteTarget').textContent = name;
   document.getElementById('wasteDeleteModal').classList.add('active');
 }
-function closeWasteDeleteModal() {
-  document.getElementById('wasteDeleteModal').classList.remove('active');
-  wasteToDelete = null;
-}
+function closeWasteDeleteModal() { document.getElementById('wasteDeleteModal').classList.remove('active'); wasteToDelete = null; }
 async function confirmDeleteWaste() {
   if (!wasteToDelete) return;
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'deleteWaste', token: TOKEN, name: wasteToDelete })
-    });
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteWaste', token: TOKEN, name: wasteToDelete }) });
     const data = await res.json();
-    if (data.ok) {
-      closeWasteDeleteModal();
-      loadWastes();
-    } else { alert('エラー: ' + data.error); }
+    if (data.ok) { closeWasteDeleteModal(); loadWastes(); }
+    else { alert('エラー: ' + data.error); }
   } catch (e) { alert('通信エラー: ' + e.message); }
 }
 
-// ============================================
-// 業者マスタ
-// ============================================
 async function loadVendors() {
   document.getElementById('vendorsTableWrap').innerHTML = '<div class="loading">読み込み中...</div>';
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'getAllVendors', token: TOKEN })
-    });
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getAllVendors', token: TOKEN }) });
     const data = await res.json();
     if (!data.ok) {
       document.getElementById('vendorsTableWrap').innerHTML = '<div class="empty">読み込みエラー: ' + (data.error || '不明') + '</div>';
@@ -499,9 +545,7 @@ function renderVendors() {
     return;
   }
   const rows = filtered.map(v => {
-    const typeBadge = v.type === '収集運搬' 
-      ? '<span class="badge badge-type-trans">収集運搬</span>'
-      : '<span class="badge badge-type-disp">処分</span>';
+    const typeBadge = v.type === '収集運搬' ? '<span class="badge badge-type-trans">収集運搬</span>' : '<span class="badge badge-type-disp">処分</span>';
     return `<tr>
       <td><span class="mono">${escapeHtml(v.id)}</span></td>
       <td>${escapeHtml(v.name)}</td>
@@ -545,10 +589,7 @@ function openEditVendorModal(v) {
   document.getElementById('vendorOldType').value = v.type || '';
   document.getElementById('vendorModal').classList.add('active');
 }
-
-function closeVendorModal() {
-  document.getElementById('vendorModal').classList.remove('active');
-}
+function closeVendorModal() { document.getElementById('vendorModal').classList.remove('active'); }
 
 async function saveVendor() {
   const id = document.getElementById('vendorId').value.trim();
@@ -559,26 +600,21 @@ async function saveVendor() {
   const note = document.getElementById('vendorNote').value.trim();
   const oldId = document.getElementById('vendorOldId').value;
   const oldType = document.getElementById('vendorOldType').value;
-  
   if (!name) { alert('業者名を入力してください'); return; }
-  
   const isEdit = !!oldType;
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({
         action: isEdit ? 'updateVendor' : 'addVendor',
-        token: TOKEN,
-        id: id, type: type, name: name,
+        token: TOKEN, id: id, type: type, name: name,
         contact: contact, address: address, note: note,
         oldId: oldId, oldType: oldType
       })
     });
     const data = await res.json();
-    if (data.ok) {
-      closeVendorModal();
-      loadVendors();
-    } else { alert('エラー: ' + data.error); }
+    if (data.ok) { closeVendorModal(); loadVendors(); }
+    else { alert('エラー: ' + data.error); }
   } catch (e) { alert('通信エラー: ' + e.message); }
 }
 
@@ -588,25 +624,14 @@ function openDeleteVendorModal(id, type, name) {
   document.getElementById('vendorDeleteTarget').textContent = name + ' (' + type + ')';
   document.getElementById('vendorDeleteModal').classList.add('active');
 }
-function closeVendorDeleteModal() {
-  document.getElementById('vendorDeleteModal').classList.remove('active');
-  vendorToDelete = null;
-}
+function closeVendorDeleteModal() { document.getElementById('vendorDeleteModal').classList.remove('active'); vendorToDelete = null; }
 async function confirmDeleteVendor() {
   if (!vendorToDelete) return;
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'deleteVendor', token: TOKEN,
-        id: vendorToDelete.id, type: vendorToDelete.type
-      })
-    });
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteVendor', token: TOKEN, id: vendorToDelete.id, type: vendorToDelete.type }) });
     const data = await res.json();
-    if (data.ok) {
-      closeVendorDeleteModal();
-      loadVendors();
-    } else { alert('エラー: ' + data.error); }
+    if (data.ok) { closeVendorDeleteModal(); loadVendors(); }
+    else { alert('エラー: ' + data.error); }
   } catch (e) { alert('通信エラー: ' + e.message); }
 }
 
