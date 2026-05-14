@@ -22,15 +22,11 @@
   .panel { background: white; padding: 24px; border-radius: 0 0 12px 12px; min-height: 400px; }
   .panel.hidden { display: none; }
   
-  .placeholder { padding: 60px 20px; text-align: center; color: #94A3B8; font-size: 14px; }
-  
-  /* 認証エラー画面 */
   .auth-error { max-width: 480px; margin: 80px auto; background: white; padding: 32px; border-radius: 12px; text-align: center; box-shadow: 0 1px 3px rgba(15,23,42,0.06); }
   .auth-error .icon { font-size: 40px; margin-bottom: 12px; }
   .auth-error h2 { font-size: 18px; margin: 0 0 8px; color: #0F172A; }
   .auth-error p { font-size: 13px; color: #64748B; margin: 0; line-height: 1.6; }
   
-  /* フィルター */
   .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
   .search-wrap { position: relative; flex: 1; min-width: 240px; }
   .search-wrap .icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 13px; pointer-events: none; }
@@ -45,7 +41,6 @@
   
   .count-label { font-size: 11px; color: #64748B; margin-bottom: 8px; }
   
-  /* テーブル */
   .table-wrap { border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead tr { background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
@@ -61,11 +56,12 @@
   .badge-pending { background: #FAEEDA; color: #854F0B; }
   .badge-done { background: #E1F5EE; color: #0F6E56; }
   .badge-cancel { background: #F1EFE8; color: #5F5E5A; }
+  .badge-type-trans { background: #DBEAFE; color: #1E40AF; }
+  .badge-type-disp { background: #E0E7FF; color: #4338CA; }
   
   .empty { padding: 40px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   .loading { padding: 40px 20px; text-align: center; color: #64748B; font-size: 13px; }
   
-  /* 行アクションボタン */
   .row-action { padding: 4px 10px; background: white; border: 1px solid #CBD5E1; border-radius: 5px; font-size: 11px; cursor: pointer; color: #475569; margin-right: 4px; }
   .row-action:hover { background: #F8FAFC; }
   .row-action.danger { color: #DC2626; border-color: #FECACA; }
@@ -74,12 +70,14 @@
   /* モーダル */
   .modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
   .modal-bg.active { display: flex; }
-  .modal-box { background: white; border-radius: 12px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 10px 40px rgba(15,23,42,0.2); }
+  .modal-box { background: white; border-radius: 12px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 10px 40px rgba(15,23,42,0.2); max-height: 90vh; overflow-y: auto; }
   .modal-title { font-size: 16px; font-weight: 600; margin: 0 0 16px; }
   .modal-field { margin-bottom: 14px; }
   .modal-field label { display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 5px; letter-spacing: 0.5px; }
-  .modal-field input { width: 100%; padding: 9px 12px; border: 1px solid #CBD5E1; border-radius: 7px; font-size: 14px; font-family: inherit; }
-  .modal-field input:focus { outline: none; border-color: #0F766E; box-shadow: 0 0 0 3px rgba(15,118,110,0.12); }
+  .modal-field input, .modal-field select, .modal-field textarea { width: 100%; padding: 9px 12px; border: 1px solid #CBD5E1; border-radius: 7px; font-size: 14px; font-family: inherit; }
+  .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { outline: none; border-color: #0F766E; box-shadow: 0 0 0 3px rgba(15,118,110,0.12); }
+  .modal-field textarea { min-height: 60px; resize: vertical; }
+  .modal-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .modal-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
   .modal-btn { padding: 9px 16px; border-radius: 7px; font-size: 13px; cursor: pointer; font-weight: 500; border: none; font-family: inherit; }
   .modal-btn.cancel { background: white; border: 1px solid #CBD5E1; color: #475569; }
@@ -92,14 +90,12 @@
 </head>
 <body>
 
-<!-- 認証エラー画面 -->
 <div id="authError" class="auth-error" style="display:none;">
   <div class="icon">🔒</div>
   <h2>アクセスできません</h2>
   <p>このページは事務担当者専用です。<br>正しいリンクからアクセスしてください。</p>
 </div>
 
-<!-- 管理画面本体 -->
 <div id="mainApp" class="container" style="display:none;">
 
   <div class="header">
@@ -129,9 +125,7 @@
       <button class="refresh-btn" onclick="loadApplies()">🔄 更新</button>
     </div>
     <div class="count-label" id="appliesCount"></div>
-    <div id="appliesTableWrap">
-      <div class="loading">読み込み中...</div>
-    </div>
+    <div id="appliesTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
   
   <!-- 廃棄物マスタ -->
@@ -145,13 +139,26 @@
       <button class="primary-btn" onclick="openWasteModal()">+ 新規追加</button>
     </div>
     <div class="count-label" id="wastesCount"></div>
-    <div id="wastesTableWrap">
-      <div class="loading">読み込み中...</div>
-    </div>
+    <div id="wastesTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
   
+  <!-- 業者マスタ -->
   <div id="panel-vendors" class="panel hidden">
-    <div class="placeholder">業者マスタ(これから実装します)</div>
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="icon">🔍</span>
+        <input id="vendorsSearch" type="text" placeholder="業者名で検索" oninput="renderVendors()">
+      </div>
+      <select id="vendorsType" class="filter-select" onchange="renderVendors()">
+        <option value="">すべて</option>
+        <option value="収集運搬">収集運搬</option>
+        <option value="処分">処分</option>
+      </select>
+      <button class="refresh-btn" onclick="loadVendors()">🔄 更新</button>
+      <button class="primary-btn" onclick="openVendorModal()">+ 新規追加</button>
+    </div>
+    <div class="count-label" id="vendorsCount"></div>
+    <div id="vendorsTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
 
 </div>
@@ -176,7 +183,7 @@
   </div>
 </div>
 
-<!-- 廃棄物 削除確認モーダル -->
+<!-- 廃棄物 削除確認 -->
 <div id="wasteDeleteModal" class="modal-bg">
   <div class="modal-box">
     <div class="modal-title">廃棄物を削除しますか?</div>
@@ -189,6 +196,61 @@
   </div>
 </div>
 
+<!-- 業者 編集モーダル -->
+<div id="vendorModal" class="modal-bg">
+  <div class="modal-box">
+    <div class="modal-title" id="vendorModalTitle">業者を追加</div>
+    <div class="modal-row2">
+      <div class="modal-field">
+        <label>業者ID(JWNET加入者番号など)</label>
+        <input id="vendorId" type="text" placeholder="例:2027732">
+      </div>
+      <div class="modal-field">
+        <label>種別 <span style="color:#DC2626;">*</span></label>
+        <select id="vendorType">
+          <option value="収集運搬">収集運搬</option>
+          <option value="処分">処分</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>業者名 <span style="color:#DC2626;">*</span></label>
+      <input id="vendorName" type="text" placeholder="例:株式会社〇〇">
+    </div>
+    <div class="modal-field">
+      <label>連絡先</label>
+      <input id="vendorContact" type="text" placeholder="電話番号">
+    </div>
+    <div class="modal-field">
+      <label>住所</label>
+      <input id="vendorAddress" type="text">
+    </div>
+    <div class="modal-field">
+      <label>備考</label>
+      <textarea id="vendorNote"></textarea>
+    </div>
+    <input type="hidden" id="vendorOldId">
+    <input type="hidden" id="vendorOldType">
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeVendorModal()">キャンセル</button>
+      <button class="modal-btn save" onclick="saveVendor()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 業者 削除確認 -->
+<div id="vendorDeleteModal" class="modal-bg">
+  <div class="modal-box">
+    <div class="modal-title">業者を削除しますか?</div>
+    <div class="confirm-msg">削除した業者は復元できません。<br>過去の契約・申請データには影響しません。</div>
+    <div class="confirm-target" id="vendorDeleteTarget"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeVendorDeleteModal()">キャンセル</button>
+      <button class="modal-btn delete" onclick="confirmDeleteVendor()">削除する</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02rDkgXBj2B6289YMhmi7C9lXCKEIbrfXNGW3AU6Qe7L2_jPg/exec';
 
@@ -197,6 +259,7 @@ const TOKEN = params.get('token');
 
 let allApplies = [];
 let allWastes = [];
+let allVendors = [];
 
 if (!TOKEN) {
   document.getElementById('authError').style.display = 'block';
@@ -205,15 +268,14 @@ if (!TOKEN) {
   loadApplies();
 }
 
-// ===== タブ切り替え =====
 function switchTab(el, name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
   document.getElementById('panel-' + name).classList.remove('hidden');
   
-  // タブを開いたときに初回ロード
   if (name === 'wastes' && allWastes.length === 0) loadWastes();
+  if (name === 'vendors' && allVendors.length === 0) loadVendors();
 }
 
 // ============================================
@@ -228,22 +290,19 @@ async function loadApplies() {
     });
     const data = await res.json();
     if (!data.ok) {
-      document.getElementById('appliesTableWrap').innerHTML = 
-        '<div class="empty">読み込みエラー: ' + (data.error || '不明') + '</div>';
+      document.getElementById('appliesTableWrap').innerHTML = '<div class="empty">読み込みエラー: ' + (data.error || '不明') + '</div>';
       return;
     }
     allApplies = data.applies || [];
     renderApplies();
   } catch (e) {
-    document.getElementById('appliesTableWrap').innerHTML = 
-      '<div class="empty">通信エラー: ' + e.message + '</div>';
+    document.getElementById('appliesTableWrap').innerHTML = '<div class="empty">通信エラー: ' + e.message + '</div>';
   }
 }
 
 function renderApplies() {
   const query = document.getElementById('appliesSearch').value.trim().toLowerCase();
   const statusFilter = document.getElementById('appliesStatus').value;
-  
   let filtered = allApplies;
   if (statusFilter) filtered = filtered.filter(a => a.status === statusFilter);
   if (query) {
@@ -253,15 +312,12 @@ function renderApplies() {
       (a.applicantName && a.applicantName.toLowerCase().includes(query))
     );
   }
-  
   document.getElementById('appliesCount').textContent = filtered.length + ' 件';
   const wrap = document.getElementById('appliesTableWrap');
-  
   if (filtered.length === 0) {
     wrap.innerHTML = '<div class="empty">該当する申請がありません</div>';
     return;
   }
-  
   const rows = filtered.map(a => {
     const isEmptyVehicle = a.contractId === 'EMPTY';
     const vendorCell = isEmptyVehicle
@@ -280,11 +336,8 @@ function renderApplies() {
       <td style="text-align:center;"><span class="badge ${badgeClass}">${escapeHtml(a.status)}</span></td>
     </tr>`;
   }).join('');
-  
   wrap.innerHTML = `<div class="table-wrap"><table>
-    <thead><tr>
-      <th>申請ID</th><th>申請日時</th><th>工事名</th><th>申請者</th><th>枚数</th><th>業者</th><th style="text-align:center;">状態</th>
-    </tr></thead>
+    <thead><tr><th>申請ID</th><th>申請日時</th><th>工事名</th><th>申請者</th><th>枚数</th><th>業者</th><th style="text-align:center;">状態</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -295,21 +348,16 @@ function renderApplies() {
 async function loadWastes() {
   document.getElementById('wastesTableWrap').innerHTML = '<div class="loading">読み込み中...</div>';
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'getWastes' })
-    });
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getWastes' }) });
     const data = await res.json();
     if (!data.ok) {
-      document.getElementById('wastesTableWrap').innerHTML = 
-        '<div class="empty">読み込みエラー</div>';
+      document.getElementById('wastesTableWrap').innerHTML = '<div class="empty">読み込みエラー</div>';
       return;
     }
     allWastes = data.wastes || [];
     renderWastes();
   } catch (e) {
-    document.getElementById('wastesTableWrap').innerHTML = 
-      '<div class="empty">通信エラー: ' + e.message + '</div>';
+    document.getElementById('wastesTableWrap').innerHTML = '<div class="empty">通信エラー: ' + e.message + '</div>';
   }
 }
 
@@ -322,15 +370,12 @@ function renderWastes() {
       (w.code && String(w.code).toLowerCase().includes(query))
     );
   }
-  
   document.getElementById('wastesCount').textContent = filtered.length + ' 件';
   const wrap = document.getElementById('wastesTableWrap');
-  
   if (filtered.length === 0) {
     wrap.innerHTML = '<div class="empty">該当する廃棄物がありません</div>';
     return;
   }
-  
   const rows = filtered.map(w => `
     <tr>
       <td><span class="mono">${escapeHtml(w.code)}</span></td>
@@ -341,14 +386,12 @@ function renderWastes() {
       </td>
     </tr>
   `).join('');
-  
   wrap.innerHTML = `<div class="table-wrap"><table>
     <thead><tr><th style="width:100px;">コード</th><th>名称</th><th style="width:140px;"></th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
 
-// 廃棄物:追加モーダル
 function openWasteModal() {
   document.getElementById('wasteModalTitle').textContent = '廃棄物を追加';
   document.getElementById('wasteCode').value = '';
@@ -357,7 +400,6 @@ function openWasteModal() {
   document.getElementById('wasteModal').classList.add('active');
 }
 
-// 廃棄物:編集モーダル
 function openEditWasteModal(code, name) {
   document.getElementById('wasteModalTitle').textContent = '廃棄物を編集';
   document.getElementById('wasteCode').value = code;
@@ -374,69 +416,198 @@ async function saveWaste() {
   const code = document.getElementById('wasteCode').value.trim();
   const name = document.getElementById('wasteName').value.trim();
   const oldName = document.getElementById('wasteOldName').value;
-  
   if (!name) { alert('名称を入力してください'); return; }
-  
   const isEdit = !!oldName;
-  
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({
         action: isEdit ? 'updateWaste' : 'addWaste',
-        token: TOKEN,
-        code: code,
-        name: name,
-        oldName: oldName
+        token: TOKEN, code: code, name: name, oldName: oldName
       })
     });
     const data = await res.json();
     if (data.ok) {
       closeWasteModal();
       loadWastes();
-    } else {
-      alert('エラー: ' + data.error);
-    }
-  } catch (e) {
-    alert('通信エラー: ' + e.message);
-  }
+    } else { alert('エラー: ' + data.error); }
+  } catch (e) { alert('通信エラー: ' + e.message); }
 }
 
-// 廃棄物:削除
 let wasteToDelete = null;
-
 function openDeleteWasteModal(name) {
   wasteToDelete = name;
   document.getElementById('wasteDeleteTarget').textContent = name;
   document.getElementById('wasteDeleteModal').classList.add('active');
 }
-
 function closeWasteDeleteModal() {
   document.getElementById('wasteDeleteModal').classList.remove('active');
   wasteToDelete = null;
 }
-
 async function confirmDeleteWaste() {
   if (!wasteToDelete) return;
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'deleteWaste',
-        token: TOKEN,
-        name: wasteToDelete
-      })
+      body: JSON.stringify({ action: 'deleteWaste', token: TOKEN, name: wasteToDelete })
     });
     const data = await res.json();
     if (data.ok) {
       closeWasteDeleteModal();
       loadWastes();
-    } else {
-      alert('エラー: ' + data.error);
+    } else { alert('エラー: ' + data.error); }
+  } catch (e) { alert('通信エラー: ' + e.message); }
+}
+
+// ============================================
+// 業者マスタ
+// ============================================
+async function loadVendors() {
+  document.getElementById('vendorsTableWrap').innerHTML = '<div class="loading">読み込み中...</div>';
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getAllVendors', token: TOKEN })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      document.getElementById('vendorsTableWrap').innerHTML = '<div class="empty">読み込みエラー: ' + (data.error || '不明') + '</div>';
+      return;
     }
+    allVendors = data.vendors || [];
+    renderVendors();
   } catch (e) {
-    alert('通信エラー: ' + e.message);
+    document.getElementById('vendorsTableWrap').innerHTML = '<div class="empty">通信エラー: ' + e.message + '</div>';
   }
+}
+
+function renderVendors() {
+  const query = document.getElementById('vendorsSearch').value.trim().toLowerCase();
+  const typeFilter = document.getElementById('vendorsType').value;
+  let filtered = allVendors;
+  if (typeFilter) filtered = filtered.filter(v => v.type === typeFilter);
+  if (query) {
+    filtered = filtered.filter(v => 
+      (v.name && v.name.toLowerCase().includes(query)) ||
+      (v.id && String(v.id).toLowerCase().includes(query))
+    );
+  }
+  document.getElementById('vendorsCount').textContent = filtered.length + ' 件';
+  const wrap = document.getElementById('vendorsTableWrap');
+  if (filtered.length === 0) {
+    wrap.innerHTML = '<div class="empty">該当する業者がありません</div>';
+    return;
+  }
+  const rows = filtered.map(v => {
+    const typeBadge = v.type === '収集運搬' 
+      ? '<span class="badge badge-type-trans">収集運搬</span>'
+      : '<span class="badge badge-type-disp">処分</span>';
+    return `<tr>
+      <td><span class="mono">${escapeHtml(v.id)}</span></td>
+      <td>${escapeHtml(v.name)}</td>
+      <td>${typeBadge}</td>
+      <td>${escapeHtml(v.contact)}</td>
+      <td style="font-size:11px; color:#64748B;">${escapeHtml(v.address)}</td>
+      <td style="text-align:right; white-space:nowrap;">
+        <button class="row-action" onclick='openEditVendorModal(${JSON.stringify(v)})'>編集</button>
+        <button class="row-action danger" onclick="openDeleteVendorModal('${escapeAttr(v.id)}','${escapeAttr(v.type)}','${escapeAttr(v.name)}')">削除</button>
+      </td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th style="width:90px;">ID</th><th>業者名</th><th style="width:90px;">種別</th><th style="width:130px;">連絡先</th><th>住所</th><th style="width:140px;"></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function openVendorModal() {
+  document.getElementById('vendorModalTitle').textContent = '業者を追加';
+  document.getElementById('vendorId').value = '';
+  document.getElementById('vendorType').value = '収集運搬';
+  document.getElementById('vendorName').value = '';
+  document.getElementById('vendorContact').value = '';
+  document.getElementById('vendorAddress').value = '';
+  document.getElementById('vendorNote').value = '';
+  document.getElementById('vendorOldId').value = '';
+  document.getElementById('vendorOldType').value = '';
+  document.getElementById('vendorModal').classList.add('active');
+}
+
+function openEditVendorModal(v) {
+  document.getElementById('vendorModalTitle').textContent = '業者を編集';
+  document.getElementById('vendorId').value = v.id || '';
+  document.getElementById('vendorType').value = v.type || '収集運搬';
+  document.getElementById('vendorName').value = v.name || '';
+  document.getElementById('vendorContact').value = v.contact || '';
+  document.getElementById('vendorAddress').value = v.address || '';
+  document.getElementById('vendorNote').value = v.note || '';
+  document.getElementById('vendorOldId').value = v.id || '';
+  document.getElementById('vendorOldType').value = v.type || '';
+  document.getElementById('vendorModal').classList.add('active');
+}
+
+function closeVendorModal() {
+  document.getElementById('vendorModal').classList.remove('active');
+}
+
+async function saveVendor() {
+  const id = document.getElementById('vendorId').value.trim();
+  const type = document.getElementById('vendorType').value;
+  const name = document.getElementById('vendorName').value.trim();
+  const contact = document.getElementById('vendorContact').value.trim();
+  const address = document.getElementById('vendorAddress').value.trim();
+  const note = document.getElementById('vendorNote').value.trim();
+  const oldId = document.getElementById('vendorOldId').value;
+  const oldType = document.getElementById('vendorOldType').value;
+  
+  if (!name) { alert('業者名を入力してください'); return; }
+  
+  const isEdit = !!oldType;
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: isEdit ? 'updateVendor' : 'addVendor',
+        token: TOKEN,
+        id: id, type: type, name: name,
+        contact: contact, address: address, note: note,
+        oldId: oldId, oldType: oldType
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      closeVendorModal();
+      loadVendors();
+    } else { alert('エラー: ' + data.error); }
+  } catch (e) { alert('通信エラー: ' + e.message); }
+}
+
+let vendorToDelete = null;
+function openDeleteVendorModal(id, type, name) {
+  vendorToDelete = { id: id, type: type };
+  document.getElementById('vendorDeleteTarget').textContent = name + ' (' + type + ')';
+  document.getElementById('vendorDeleteModal').classList.add('active');
+}
+function closeVendorDeleteModal() {
+  document.getElementById('vendorDeleteModal').classList.remove('active');
+  vendorToDelete = null;
+}
+async function confirmDeleteVendor() {
+  if (!vendorToDelete) return;
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'deleteVendor', token: TOKEN,
+        id: vendorToDelete.id, type: vendorToDelete.type
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      closeVendorDeleteModal();
+      loadVendors();
+    } else { alert('エラー: ' + data.error); }
+  } catch (e) { alert('通信エラー: ' + e.message); }
 }
 
 function escapeHtml(s) {
