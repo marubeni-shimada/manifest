@@ -225,7 +225,7 @@
       <label>工事名 <span style="color:#DC2626;">*</span></label>
       <input id="projectName" type="text" placeholder="例:〇〇ビル解体工事">
     </div>
-    <div class="modal-field">
+    <div class="modal-field" id="projectStatusField" style="display:none;">
       <label>状態</label>
       <select id="projectStatus">
         <option value="進行中">進行中</option>
@@ -479,6 +479,7 @@ function openProjectModal() {
   document.getElementById('projectStatus').value = '進行中';
   document.getElementById('projectNote').value = '';
   document.getElementById('projectId').value = '';
+  document.getElementById('projectStatusField').style.display = 'none';  // 新規時は状態を隠す
   document.getElementById('projectModal').classList.add('active');
 }
 function openEditProjectModal(p) {
@@ -487,8 +488,10 @@ function openEditProjectModal(p) {
   document.getElementById('projectStatus').value = p.status || '進行中';
   document.getElementById('projectNote').value = p.note || '';
   document.getElementById('projectId').value = p.id || '';
+  document.getElementById('projectStatusField').style.display = 'block';  // 編集時は状態を表示
   document.getElementById('projectModal').classList.add('active');
 }
+
 function closeProjectModal() { document.getElementById('projectModal').classList.remove('active'); }
 
 async function saveProject() {
