@@ -25,6 +25,8 @@
   .menu-btn .icon-box { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-size: 20px; }
   .icon-green { background: linear-gradient(135deg, #06C755 0%, #0F766E 100%); }
   .icon-blue { background: linear-gradient(135deg, #0EA5E9 0%, #0E7490 100%); }
+  .icon-orange { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+  .icon-gray { background: linear-gradient(135deg, #64748B 0%, #475569 100%); }
   .menu-btn .text { flex: 1; }
   .menu-btn .title { font-size: 14px; font-weight: 600; color: #0F172A; }
   .menu-btn .desc { font-size: 11px; color: #64748B; margin-top: 3px; }
@@ -82,6 +84,8 @@
   .info-row:last-child { margin-bottom: 0; }
   .info-label { color: #0E7490; font-weight: 600; min-width: 60px; }
   .info-value { color: #0F172A; }
+  
+  .submenu-note { font-size: 12px; color: #64748B; margin-bottom: 14px; text-align: center; }
 </style>
 </head>
 <body>
@@ -111,7 +115,7 @@
       </div>
       <div class="arrow">›</div>
     </button>
-    <button class="menu-btn" onclick="openApplyForm()">
+    <button class="menu-btn" onclick="showPage('applyMenu')">
       <div class="icon-box icon-blue">🚚</div>
       <div class="text">
         <div class="title">マニフェスト申請</div>
@@ -128,6 +132,47 @@
     <button class="sub-btn" onclick="showPage('finish')">
       <div class="icon">🏁</div>
       <div class="label">工事を終了する</div>
+    </button>
+  </div>
+</div>
+
+<!-- ===== 申請タイプ選択メニュー ===== -->
+<div id="page-applyMenu" class="page">
+  <div class="header">
+    <button class="back-btn" onclick="showPage('menu')">‹</button>
+    <div>
+      <div class="eyebrow">APPLICATION TYPE</div>
+      <h1>申請タイプを選ぶ</h1>
+    </div>
+  </div>
+  <div class="content">
+    <div class="submenu-note">どの申請を行いますか?</div>
+    
+    <button class="menu-btn" onclick="openApplyFormContract()">
+      <div class="icon-box icon-blue">📋</div>
+      <div class="text">
+        <div class="title">契約内容から申請</div>
+        <div class="desc">契約済みの工事 + 業者から選んで申請</div>
+      </div>
+      <div class="arrow">›</div>
+    </button>
+    
+    <button class="menu-btn" onclick="openApplyFormEmpty()">
+      <div class="icon-box icon-orange">🚛</div>
+      <div class="text">
+        <div class="title">工事名のみ申請(空車)</div>
+        <div class="desc">工事を選んで空車として申請</div>
+      </div>
+      <div class="arrow">›</div>
+    </button>
+    
+    <button class="menu-btn" onclick="openApplyFormBlank()">
+      <div class="icon-box icon-gray">📃</div>
+      <div class="text">
+        <div class="title">申請用紙のみ(白紙)</div>
+        <div class="desc">枚数だけで申請</div>
+      </div>
+      <div class="arrow">›</div>
     </button>
   </div>
 </div>
@@ -178,7 +223,6 @@
       <input type="hidden" id="c_disposerId">
       <input type="hidden" id="c_disposerName">
     </div>
-    
     <div class="field">
       <label>廃棄物の種類と予定数量</label>
       <div class="waste-box">
@@ -189,12 +233,10 @@
         <div class="waste-add-row" id="c_wasteAvailable">読み込み中...</div>
       </div>
     </div>
-    
     <div class="field">
       <label>契約開始希望日</label>
       <input id="c_startDate" type="date">
     </div>
-    
     <div class="row2">
       <div class="field">
         <label>委託期間 開始日</label>
@@ -205,7 +247,6 @@
         <input id="c_periodEnd" type="date">
       </div>
     </div>
-    
     <div class="field">
       <label>備考</label>
       <textarea id="c_note"></textarea>
@@ -214,13 +255,13 @@
   </div>
 </div>
 
-<!-- ===== マニフェスト申請フォーム ===== -->
+<!-- ===== ① 契約あり:申請フォーム ===== -->
 <div id="page-apply" class="page">
   <div class="header">
-    <button class="back-btn" onclick="showPage('menu')">‹</button>
+    <button class="back-btn" onclick="showPage('applyMenu')">‹</button>
     <div>
-      <div class="eyebrow">NEW APPLICATION</div>
-      <h1>マニフェスト申請</h1>
+      <div class="eyebrow">WITH CONTRACT</div>
+      <h1>契約内容から申請</h1>
     </div>
   </div>
   <div class="content">
@@ -249,6 +290,59 @@
   </div>
 </div>
 
+<!-- ===== ② 空車:申請フォーム ===== -->
+<div id="page-applyEmpty" class="page">
+  <div class="header">
+    <button class="back-btn" onclick="showPage('applyMenu')">‹</button>
+    <div>
+      <div class="eyebrow">EMPTY VEHICLE</div>
+      <h1>工事名のみ申請(空車)</h1>
+    </div>
+  </div>
+  <div class="content">
+    <div class="field">
+      <label>工事名 <span class="req">●</span></label>
+      <select id="e_project">
+        <option value="">読み込み中...</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>枚数 <span class="req">●</span></label>
+      <input id="e_count" type="number" inputmode="numeric" placeholder="例:5">
+    </div>
+    <div class="field">
+      <label>備考</label>
+      <textarea id="e_note"></textarea>
+    </div>
+    <button class="submit" onclick="submitApplyEmpty()">申請を送信</button>
+  </div>
+</div>
+
+<!-- ===== ③ 白紙:申請フォーム ===== -->
+<div id="page-applyBlank" class="page">
+  <div class="header">
+    <button class="back-btn" onclick="showPage('applyMenu')">‹</button>
+    <div>
+      <div class="eyebrow">BLANK</div>
+      <h1>申請用紙のみ(白紙)</h1>
+    </div>
+  </div>
+  <div class="content">
+    <div class="info-box" style="margin-bottom: 16px;">
+      <div style="font-size: 12px; color: #0E7490;">工事名・業者の指定なしで申請します。枚数のみ入力してください。</div>
+    </div>
+    <div class="field">
+      <label>枚数 <span class="req">●</span></label>
+      <input id="b_count" type="number" inputmode="numeric" placeholder="例:5">
+    </div>
+    <div class="field">
+      <label>備考</label>
+      <textarea id="b_note"></textarea>
+    </div>
+    <button class="submit" onclick="submitApplyBlank()">申請を送信</button>
+  </div>
+</div>
+
 <!-- ===== 業者選択モーダル ===== -->
 <div id="vendorModal" class="modal">
   <div class="modal-header">
@@ -272,10 +366,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02r
 let userProfile = null;
 let myContracts = [];
 let wasteList = [];
-
-// 契約フォーム用:選んだ廃棄物 [{name, quantity, unit}]
 let contractWastes = [];
-
 let allTransporters = [];
 let allDisposers = [];
 let currentPickerType = null;
@@ -310,6 +401,7 @@ function showPage(name) {
   window.scrollTo(0, 0);
 }
 
+// ===== 契約フォーム =====
 async function openContractForm() {
   showPage('contract');
   contractWastes = [];
@@ -328,7 +420,6 @@ async function openContractForm() {
 function renderContractWastes() {
   const selectedEl = document.getElementById('c_wasteSelected');
   const availableEl = document.getElementById('c_wasteAvailable');
-  
   if (contractWastes.length === 0) {
     selectedEl.innerHTML = '<div class="waste-empty">下の種類をタップして追加してください</div>';
   } else {
@@ -344,7 +435,6 @@ function renderContractWastes() {
       </div>
     `).join('');
   }
-  
   const available = wasteList.filter(w => !contractWastes.some(cw => cw.name === w.name));
   if (available.length === 0) {
     availableEl.innerHTML = '<div class="waste-empty">すべて選択済み</div>';
@@ -361,19 +451,9 @@ function addContractWaste(name) {
     renderContractWastes();
   }
 }
-
-function removeContractWaste(index) {
-  contractWastes.splice(index, 1);
-  renderContractWastes();
-}
-
-function updateContractWasteQty(index, value) {
-  contractWastes[index].quantity = value;
-}
-
-function updateContractWasteUnit(index, value) {
-  contractWastes[index].unit = value;
-}
+function removeContractWaste(i) { contractWastes.splice(i, 1); renderContractWastes(); }
+function updateContractWasteQty(i, v) { contractWastes[i].quantity = v; }
+function updateContractWasteUnit(i, v) { contractWastes[i].unit = v; }
 
 function openVendorPicker(type) {
   currentPickerType = type;
@@ -384,10 +464,7 @@ function openVendorPicker(type) {
   filterVendors();
   setTimeout(() => document.getElementById('vendorSearchInput').focus(), 100);
 }
-
-function closeVendorPicker() {
-  document.getElementById('vendorModal').classList.remove('active');
-}
+function closeVendorPicker() { document.getElementById('vendorModal').classList.remove('active'); }
 
 function filterVendors() {
   const query = document.getElementById('vendorSearchInput').value.trim().toLowerCase();
@@ -420,38 +497,25 @@ async function submitContract() {
   const transId = val('c_transporterId');
   const dispId = val('c_disposerId');
   if (!transId || !dispId) { alert('収集運搬業者と処分業者を選択してください'); return; }
-  
-  const wastesStr = contractWastes
-    .filter(w => w.name)
-    .map(w => `${w.name}:${w.quantity || ''}${w.unit || ''}`)
-    .join(', ');
-  
+  const wastesStr = contractWastes.filter(w => w.name).map(w => `${w.name}:${w.quantity || ''}${w.unit || ''}`).join(', ');
   const payload = {
     action: 'submitContract',
     applicantName: userProfile ? userProfile.displayName : '不明',
     userId: userProfile ? userProfile.userId : '',
-    projectName: val('c_projectName'),
-    company: val('c_company'),
-    person: val('c_person'),
-    contact: val('c_contact'),
-    transporterId: transId,
-    transporterName: val('c_transporterName'),
-    disposerId: dispId,
-    disposerName: val('c_disposerName'),
+    projectName: val('c_projectName'), company: val('c_company'),
+    person: val('c_person'), contact: val('c_contact'),
+    transporterId: transId, transporterName: val('c_transporterName'),
+    disposerId: dispId, disposerName: val('c_disposerName'),
     wastes: wastesStr,
     startDate: val('c_startDate'),
-    periodStart: val('c_periodStart'),
-    periodEnd: val('c_periodEnd'),
+    periodStart: val('c_periodStart'), periodEnd: val('c_periodEnd'),
     note: val('c_note')
   };
-  
   if (!payload.projectName || !payload.company || !payload.person || !payload.contact) {
     alert('必須項目(●)を入力してください'); return;
   }
-  
   const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = '送信中...';
+  btn.disabled = true; btn.textContent = '送信中...';
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
@@ -459,14 +523,9 @@ async function submitContract() {
       alert('✅ 契約依頼を送信しました\n依頼ID: ' + data.id);
       clearContractForm();
       showPage('menu');
-    } else {
-      alert('❌ 送信失敗: ' + data.error);
-    }
-  } catch (e) {
-    alert('❌ 通信エラー: ' + e.message);
-  }
-  btn.disabled = false;
-  btn.textContent = '送信する';
+    } else { alert('❌ 送信失敗: ' + data.error); }
+  } catch (e) { alert('❌ 通信エラー: ' + e.message); }
+  btn.disabled = false; btn.textContent = '送信する';
 }
 
 function val(id) { return document.getElementById(id).value.trim(); }
@@ -487,10 +546,13 @@ function clearContractForm() {
   renderContractWastes();
 }
 
-async function openApplyForm() {
+// ===== ① 契約あり 申請フォーム =====
+async function openApplyFormContract() {
   showPage('apply');
   document.getElementById('a_contract').innerHTML = '<option value="">先に工事を選んでください</option>';
   document.getElementById('a_contractInfo').innerHTML = '';
+  document.getElementById('a_count').value = '';
+  document.getElementById('a_note').value = '';
   
   try {
     const res = await fetch(GAS_URL, {
@@ -521,24 +583,18 @@ function onProjectChange() {
     return;
   }
   const filtered = myContracts.filter(c => c.projectName === projectName);
-  let options = '<option value="">選択してください</option>';
-  options += filtered.map(c => 
-    `<option value="${escapeAttr(c.id)}">${escapeHtml(c.transporterName)} → ${escapeHtml(c.disposerName)}</option>`
-  ).join('');
-  options += '<option value="EMPTY">空車依頼</option>';
-  select.innerHTML = options;
+  if (filtered.length === 0) {
+    select.innerHTML = '<option value="">この工事の契約がありません</option>';
+    return;
+  }
+  select.innerHTML = '<option value="">選択してください</option>' +
+    filtered.map(c => `<option value="${escapeAttr(c.id)}">${escapeHtml(c.transporterName)} → ${escapeHtml(c.disposerName)}</option>`).join('');
 }
 
 function onContractChange() {
   const contractId = val('a_contract');
   const infoEl = document.getElementById('a_contractInfo');
   if (!contractId) { infoEl.innerHTML = ''; return; }
-  if (contractId === 'EMPTY') {
-    infoEl.innerHTML = `<div class="info-box">
-      <div class="info-row"><span class="info-label">区分</span><span class="info-value">空車依頼</span></div>
-    </div>`;
-    return;
-  }
   const c = myContracts.find(c => c.id === contractId);
   if (c) {
     infoEl.innerHTML = `<div class="info-box">
@@ -555,40 +611,84 @@ async function submitApply() {
   if (!projectName) { alert('工事を選択してください'); return; }
   if (!contractId) { alert('契約を選択してください'); return; }
   if (!count) { alert('枚数を入力してください'); return; }
-  
   const payload = {
-    action: 'submitApply',
+    action: 'submitApply', applyType: '契約あり',
     applicantName: userProfile ? userProfile.displayName : '不明',
     userId: userProfile ? userProfile.userId : '',
-    contractId: contractId,
-    projectName: projectName,
-    count: count,
-    note: val('a_note')
+    contractId: contractId, projectName: projectName,
+    count: count, note: val('a_note')
   };
-  
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = '送信中...';
+  await sendApply(payload, event.target);
+}
+
+// ===== ② 空車 申請フォーム =====
+async function openApplyFormEmpty() {
+  showPage('applyEmpty');
+  document.getElementById('e_count').value = '';
+  document.getElementById('e_note').value = '';
+  const select = document.getElementById('e_project');
+  select.innerHTML = '<option value="">読み込み中...</option>';
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST', body: JSON.stringify({ action: 'getAllProjects' })
+    });
+    const data = await res.json();
+    if (data.ok && data.projects.length > 0) {
+      select.innerHTML = '<option value="">選択してください</option>' +
+        data.projects.map(p => `<option value="${escapeAttr(p)}">${escapeHtml(p)}</option>`).join('');
+    } else {
+      select.innerHTML = '<option value="">登録された工事がありません</option>';
+    }
+  } catch (e) {
+    select.innerHTML = '<option value="">読み込みエラー</option>';
+  }
+}
+
+async function submitApplyEmpty() {
+  const projectName = val('e_project');
+  const count = val('e_count');
+  if (!projectName) { alert('工事を選択してください'); return; }
+  if (!count) { alert('枚数を入力してください'); return; }
+  const payload = {
+    action: 'submitApply', applyType: '空車',
+    applicantName: userProfile ? userProfile.displayName : '不明',
+    userId: userProfile ? userProfile.userId : '',
+    projectName: projectName, count: count, note: val('e_note')
+  };
+  await sendApply(payload, event.target);
+}
+
+// ===== ③ 白紙 申請フォーム =====
+function openApplyFormBlank() {
+  showPage('applyBlank');
+  document.getElementById('b_count').value = '';
+  document.getElementById('b_note').value = '';
+}
+
+async function submitApplyBlank() {
+  const count = val('b_count');
+  if (!count) { alert('枚数を入力してください'); return; }
+  const payload = {
+    action: 'submitApply', applyType: '白紙',
+    applicantName: userProfile ? userProfile.displayName : '不明',
+    userId: userProfile ? userProfile.userId : '',
+    count: count, note: val('b_note')
+  };
+  await sendApply(payload, event.target);
+}
+
+// ===== 共通:申請送信 =====
+async function sendApply(payload, btn) {
+  btn.disabled = true; btn.textContent = '送信中...';
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
     if (data.ok) {
       alert('✅ マニフェスト申請を送信しました\n申請ID: ' + data.id);
-      clearApplyForm();
       showPage('menu');
-    } else {
-      alert('❌ 送信失敗: ' + data.error);
-    }
-  } catch (e) {
-    alert('❌ 通信エラー: ' + e.message);
-  }
-  btn.disabled = false;
-  btn.textContent = '申請を送信';
-}
-
-function clearApplyForm() {
-  ['a_project','a_contract','a_count','a_note'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('a_contractInfo').innerHTML = '';
+    } else { alert('❌ 送信失敗: ' + data.error); }
+  } catch (e) { alert('❌ 通信エラー: ' + e.message); }
+  btn.disabled = false; btn.textContent = '申請を送信';
 }
 
 function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
