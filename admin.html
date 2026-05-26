@@ -478,7 +478,42 @@ async function loadDashboard() {
 
 function renderDashboard(d) {
   const body = document.getElementById('dashboardBody');
+  
+  const totalOverdue = (d.appliesOverdue || 0) + (d.contractsOverdue || 0);
+  
+  let overdueSection;
+  if (totalOverdue === 0) {
+    overdueSection = `
+      <div class="dash-section">
+        <div class="dash-section-title">🚨 要確認:対応が遅れている案件</div>
+        <div style="background: #ECFDF5; border: 1px solid #6EE7B7; border-radius: 8px; padding: 16px; text-align: center; color: #047857; font-size: 13px; font-weight: 500;">
+          ✅ 対応が遅れている案件はありません
+        </div>
+      </div>
+    `;
+  } else {
+    overdueSection = `
+      <div class="dash-section">
+        <div class="dash-section-title">🚨 要確認:対応が遅れている案件</div>
+        <div class="dash-grid-alert">
+          <div class="dash-card-alert" style="background:#FEE2E2; border-left-color:#DC2626; color:#991B1B;" onclick="jumpToTab('applies', '申請中')">
+            <div class="dash-card-label">申請から3日以上経過</div>
+            <div class="dash-card-value">${d.appliesOverdue || 0}<span class="unit">件</span></div>
+            <div class="dash-card-desc">完了処理が遅れている申請</div>
+          </div>
+          <div class="dash-card-alert" style="background:#FEE2E2; border-left-color:#DC2626; color:#991B1B;" onclick="jumpToTab('contracts', '')">
+            <div class="dash-card-label">契約依頼から1週間以上経過</div>
+            <div class="dash-card-value">${d.contractsOverdue || 0}<span class="unit">件</span></div>
+            <div class="dash-card-desc">動きが止まっている契約</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
   body.innerHTML = `
+    ${overdueSection}
+    
     <div class="dash-section">
       <div class="dash-section-title">対応待ち</div>
       <div class="dash-grid-alert">
@@ -523,6 +558,7 @@ function renderDashboard(d) {
     </div>
   `;
 }
+
 
 // ============================================
 // 申請一覧
