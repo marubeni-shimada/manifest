@@ -32,6 +32,27 @@
   .auth-error h2 { font-size: 18px; margin: 0 0 8px; color: #0F172A; }
   .auth-error p { font-size: 13px; color: #64748B; margin: 0; line-height: 1.6; }
   
+  /* ダッシュボード */
+  .dash-section-title { font-size: 11px; color: #64748B; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; margin: 0 0 12px; }
+  .dash-section { margin-bottom: 24px; }
+  .dash-grid-alert { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .dash-grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .dash-card-alert { border-radius: 8px; padding: 16px 18px; border-left: 4px solid; cursor: pointer; transition: transform 0.15s; }
+  .dash-card-alert:hover { transform: translateY(-2px); }
+  .dash-card-info { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 14px 16px; }
+  .dash-card-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+  .dash-card-value { font-size: 28px; font-weight: 600; line-height: 1; }
+  .dash-card-value .unit { font-size: 13px; font-weight: 500; margin-left: 4px; }
+  .dash-card-desc { font-size: 10px; margin-top: 4px; }
+  .dash-info-label { font-size: 11px; color: #64748B; font-weight: 500; margin-bottom: 4px; }
+  .dash-info-value { font-size: 22px; font-weight: 600; color: #0F172A; line-height: 1; }
+  .dash-info-value .unit { font-size: 12px; font-weight: 500; color: #64748B; margin-left: 4px; }
+  
+  .alert-orange { background: #FAEEDA; border-left-color: #F59E0B; color: #854F0B; }
+  .alert-amber { background: #FEF3C7; border-left-color: #D97706; color: #92400E; }
+  .alert-blue { background: #DBEAFE; border-left-color: #1E40AF; color: #1E40AF; }
+  .alert-green { background: #E1F5EE; border-left-color: #0F6E56; color: #0F6E56; }
+  
   .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
   .search-wrap { position: relative; flex: 1; min-width: 240px; }
   .search-wrap .icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 13px; pointer-events: none; }
@@ -139,14 +160,21 @@
   </div>
   
   <div class="tabs">
-    <div class="tab active" data-tab="applies" onclick="switchTab(this, 'applies')">📋 申請一覧</div>
+    <div class="tab active" data-tab="dashboard" onclick="switchTab(this, 'dashboard')">📊 ダッシュボード</div>
+    <div class="tab" data-tab="applies" onclick="switchTab(this, 'applies')">📋 申請一覧</div>
     <div class="tab" data-tab="contracts" onclick="switchTab(this, 'contracts')">📝 契約一覧</div>
     <div class="tab" data-tab="projects" onclick="switchTab(this, 'projects')">🏗️ 工事マスタ</div>
     <div class="tab" data-tab="wastes" onclick="switchTab(this, 'wastes')">📦 廃棄物マスタ</div>
     <div class="tab" data-tab="vendors" onclick="switchTab(this, 'vendors')">🚚 業者マスタ</div>
   </div>
   
-  <div id="panel-applies" class="panel">
+  <!-- ダッシュボード -->
+  <div id="panel-dashboard" class="panel">
+    <div id="dashboardBody"><div class="loading">読み込み中...</div></div>
+  </div>
+  
+  <!-- 申請一覧 -->
+  <div id="panel-applies" class="panel hidden">
     <div class="filter-bar">
       <div class="search-wrap">
         <span class="icon">🔍</span>
@@ -164,6 +192,7 @@
     <div id="appliesTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
   
+  <!-- 契約一覧 -->
   <div id="panel-contracts" class="panel hidden">
     <div class="filter-bar">
       <div class="search-wrap">
@@ -183,6 +212,7 @@
     <div id="contractsTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
   
+  <!-- 工事マスタ -->
   <div id="panel-projects" class="panel hidden">
     <div class="filter-bar">
       <div class="search-wrap">
@@ -201,6 +231,7 @@
     <div id="projectsTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
   
+  <!-- 廃棄物マスタ -->
   <div id="panel-wastes" class="panel hidden">
     <div class="filter-bar">
       <div class="search-wrap">
@@ -214,6 +245,7 @@
     <div id="wastesTableWrap"><div class="loading">読み込み中...</div></div>
   </div>
   
+  <!-- 業者マスタ -->
   <div id="panel-vendors" class="panel hidden">
     <div class="filter-bar">
       <div class="search-wrap">
@@ -388,7 +420,7 @@ if (!TOKEN) {
 } else {
   document.getElementById('mainApp').style.display = 'block';
   loadOperatorName();
-  loadApplies();
+  loadDashboard();
 }
 
 function loadOperatorName() {
@@ -404,10 +436,93 @@ function switchTab(el, name) {
   el.classList.add('active');
   document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
   document.getElementById('panel-' + name).classList.remove('hidden');
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'applies' && allApplies.length === 0) loadApplies();
   if (name === 'contracts' && allContracts.length === 0) loadContracts();
   if (name === 'projects' && allProjects.length === 0) loadProjects();
   if (name === 'wastes' && allWastes.length === 0) loadWastes();
   if (name === 'vendors' && allVendors.length === 0) loadVendors();
+}
+
+// タブを切り替える共通関数(ダッシュボードから飛ぶ用)
+function jumpToTab(name, statusFilter) {
+  const tabEl = document.querySelector('.tab[data-tab="' + name + '"]');
+  if (tabEl) {
+    switchTab(tabEl, name);
+    if (statusFilter) {
+      setTimeout(() => {
+        if (name === 'applies') {
+          document.getElementById('appliesStatus').value = statusFilter;
+          if (allApplies.length > 0) renderApplies();
+        } else if (name === 'contracts') {
+          document.getElementById('contractsStatus').value = statusFilter;
+          if (allContracts.length > 0) renderContracts();
+        }
+      }, 200);
+    }
+  }
+}
+
+// ============================================
+// ダッシュボード
+// ============================================
+async function loadDashboard() {
+  document.getElementById('dashboardBody').innerHTML = '<div class="loading">読み込み中...</div>';
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getDashboard', token: TOKEN }) });
+    const data = await res.json();
+    if (!data.ok) { document.getElementById('dashboardBody').innerHTML = '<div class="empty">読み込みエラー: ' + (data.error || '不明') + '</div>'; return; }
+    renderDashboard(data);
+  } catch (e) { document.getElementById('dashboardBody').innerHTML = '<div class="empty">通信エラー: ' + e.message + '</div>'; }
+}
+
+function renderDashboard(d) {
+  const body = document.getElementById('dashboardBody');
+  body.innerHTML = `
+    <div class="dash-section">
+      <div class="dash-section-title">対応待ち</div>
+      <div class="dash-grid-alert">
+        <div class="dash-card-alert alert-orange" onclick="jumpToTab('applies', '申請中')">
+          <div class="dash-card-label">申請中</div>
+          <div class="dash-card-value">${d.appliesPending}<span class="unit">件</span></div>
+          <div class="dash-card-desc">JWNET登録待ち</div>
+        </div>
+        <div class="dash-card-alert alert-amber" onclick="jumpToTab('contracts', '依頼受付')">
+          <div class="dash-card-label">依頼受付の契約</div>
+          <div class="dash-card-value">${d.contractsReceived}<span class="unit">件</span></div>
+          <div class="dash-card-desc">契約書類作成待ち</div>
+        </div>
+        <div class="dash-card-alert alert-blue" onclick="jumpToTab('contracts', '書類作成中')">
+          <div class="dash-card-label">書類作成中の契約</div>
+          <div class="dash-card-value">${d.contractsDrafting}<span class="unit">件</span></div>
+          <div class="dash-card-desc">作成中</div>
+        </div>
+        <div class="dash-card-alert alert-green" onclick="jumpToTab('applies', '')">
+          <div class="dash-card-label">本日の新規申請</div>
+          <div class="dash-card-value">${d.appliesTodayNew}<span class="unit">件</span></div>
+          <div class="dash-card-desc">今日入った申請</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="dash-section">
+      <div class="dash-section-title">全体状況</div>
+      <div class="dash-grid-info">
+        <div class="dash-card-info">
+          <div class="dash-info-label">進行中の工事</div>
+          <div class="dash-info-value">${d.projectsInProgress}<span class="unit">件</span></div>
+        </div>
+        <div class="dash-card-info">
+          <div class="dash-info-label">有効な契約</div>
+          <div class="dash-info-value">${d.contractsActive}<span class="unit">件</span></div>
+        </div>
+        <div class="dash-card-info">
+          <div class="dash-info-label">今月の完了申請</div>
+          <div class="dash-info-value">${d.appliesThisMonthDone}<span class="unit">件</span></div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // ============================================
@@ -694,15 +809,12 @@ async function confirmDeleteProject() {
   } catch (e) { alert('通信エラー: ' + e.message); }
 }
 
-// 工事 終了
 let projectToFinish = null;
 async function openFinishProjectModal(id, name) {
   projectToFinish = id;
   document.getElementById('projectFinishTarget').innerHTML = '<strong>' + escapeHtml(name) + '</strong>';
   document.getElementById('projectFinishWarn').innerHTML = '<div style="font-size:11px;color:#94A3B8;padding:8px 0;">未処理申請を確認中...</div>';
   document.getElementById('projectFinishModal').classList.add('active');
-  
-  // 申請中チェック
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
