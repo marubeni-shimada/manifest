@@ -785,10 +785,6 @@ function renderHistory() {
   }
   
   wrap.innerHTML = myApplies.map(a => {
-    const badgeClass = a.status === '完了' ? 'badge-done' 
-      : a.status === 'キャンセル' ? 'badge-cancel' 
-      : 'badge-pending';
-    
     const isEmpty = a.applyType === '空車';
     const isBlank = a.applyType === '白紙';
     const projectTitle = a.projectName || '(工事名なし)';
@@ -798,18 +794,9 @@ function renderHistory() {
     else if (isEmpty) vendorLine = '<span style="color:#94A3B8;">空車依頼</span>';
     else vendorLine = escapeHtml(a.transporterName) + ' → ' + escapeHtml(a.disposerName);
     
-    let actions = '';
-    if (a.status === '申請中') {
-      actions = `<div class="history-actions">
-        <button class="history-action edit" onclick='openEditModal(${JSON.stringify(a)})'>✏️ 編集</button>
-        <button class="history-action cancel" onclick='openCancelModal(${JSON.stringify(a)})'>🚫 キャンセル</button>
-      </div>`;
-    }
-    
     return `<div class="history-card">
       <div class="history-head">
         <span class="history-id">${escapeHtml(a.id)}</span>
-        <span class="history-badge ${badgeClass}">${escapeHtml(a.status)}</span>
       </div>
       <div class="history-meta">${escapeHtml(a.submittedAt)} ・ ${escapeHtml(a.applyType || '-')}</div>
       <div class="history-title">${escapeHtml(projectTitle)}</div>
@@ -817,11 +804,10 @@ function renderHistory() {
         <b>枚数:</b> ${escapeHtml(a.count)} ・ ${vendorLine}<br>
         ${a.note ? '<b>備考:</b> ' + escapeHtml(a.note) : ''}
       </div>
-      ${actions}
     </div>`;
   }).join('');
 }
-
+ 
 // 編集モーダル
 let editTargetId = null;
 function openEditModal(a) {
