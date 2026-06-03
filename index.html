@@ -336,9 +336,8 @@
     </div>
     <div class="modal-count" id="vendorCount"></div>
   </div>
-  <div class="modal-list" id="vendorList"></div>
-  <!-- 新規追加エリア(固定で下に表示) -->
-  <div style="padding: 10px 12px; border-top: 1px solid #E2E8F0; flex-shrink: 0;">
+  <!-- 新規追加エリア(検索の下、リストの上に表示) -->
+  <div style="padding: 10px 12px; border-bottom: 1px solid #E2E8F0; flex-shrink: 0;">
     <div class="new-vendor-box">
       <button class="new-vendor-toggle" id="newVendorToggle" onclick="toggleNewVendor()">+ 一覧にない業者を追加する</button>
       <div id="newVendorRow" style="display:none;">
@@ -350,6 +349,7 @@
       </div>
     </div>
   </div>
+  <div class="modal-list" id="vendorList"></div>
 </div>
 
 <script>
