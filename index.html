@@ -79,6 +79,14 @@
   .modal-item:active { background: #F1F5F9; }
   .modal-empty { padding: 30px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   
+  /* 新規業者追加エリア */
+  .new-vendor-box { background: #F0FDFA; border: 1px dashed #0F766E; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+  .new-vendor-toggle { width: 100%; background: transparent; border: none; color: #0F766E; font-size: 13px; font-weight: 600; cursor: pointer; padding: 4px; font-family: inherit; text-align: left; }
+  .new-vendor-input-row { display: flex; gap: 6px; margin-top: 8px; }
+  .new-vendor-input-row input { flex: 1; padding: 9px 11px; font-size: 13px; }
+  .new-vendor-input-row button { padding: 0 14px; background: #0F766E; color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+  .new-vendor-input-row button.cancel { background: #E2E8F0; color: #475569; }
+  
   .info-box { background: #ECFEFF; border: 1px solid #A5F3FC; border-radius: 9px; padding: 10px 12px; margin-top: 8px; }
   .info-row { display: flex; gap: 8px; font-size: 12px; margin-bottom: 4px; }
   .info-row:last-child { margin-bottom: 0; }
@@ -98,32 +106,12 @@
   .history-card { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
   .history-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px; flex-wrap: wrap; }
   .history-id { font-family: monospace; font-size: 10px; color: #94A3B8; }
-  .history-badge { padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
-  .badge-pending { background: #FAEEDA; color: #854F0B; }
-  .badge-done { background: #E1F5EE; color: #0F6E56; }
-  .badge-cancel { background: #F1EFE8; color: #5F5E5A; }
   .history-meta { font-size: 11px; color: #64748B; margin-bottom: 6px; }
   .history-title { font-size: 14px; font-weight: 600; color: #0F172A; margin-bottom: 6px; word-break: break-word; }
   .history-detail { font-size: 12px; color: #475569; line-height: 1.6; }
   .history-detail b { color: #0F172A; font-weight: 600; }
-  .history-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #F1F5F9; }
-  .history-action { flex: 1; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid #CBD5E1; background: white; color: #475569; font-family: inherit; }
-  .history-action.edit { color: #0F766E; border-color: #0F766E; }
-  .history-action.cancel { color: #DC2626; border-color: #FCA5A5; }
   .history-empty { padding: 60px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   .history-loading { padding: 40px; text-align: center; color: #64748B; font-size: 13px; }
-  
-  /* 編集モーダル(中央表示) */
-  .center-modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
-  .center-modal.active { display: flex; }
-  .center-modal-box { background: white; border-radius: 14px; padding: 20px; max-width: 400px; width: 100%; box-shadow: 0 10px 40px rgba(15,23,42,0.2); max-height: 90vh; overflow-y: auto; }
-  .center-modal-title { font-size: 15px; font-weight: 600; margin: 0 0 14px; }
-  .center-modal-info { background: #F8FAFC; border-radius: 8px; padding: 9px 12px; font-size: 12px; color: #475569; margin-bottom: 14px; }
-  .center-modal-actions { display: flex; gap: 8px; margin-top: 16px; }
-  .center-modal-btn { flex: 1; padding: 11px; border-radius: 9px; font-size: 14px; cursor: pointer; font-weight: 600; border: none; font-family: inherit; }
-  .center-modal-btn.cancel { background: white; border: 1px solid #CBD5E1; color: #475569; }
-  .center-modal-btn.save { background: linear-gradient(135deg, #06C755 0%, #0F766E 100%); color: white; }
-  .center-modal-btn.delete { background: #DC2626; color: white; }
 </style>
 </head>
 <body>
@@ -234,10 +222,7 @@
       <label>排出事業者名 <span class="req">●</span></label>
       <input id="c_company" type="text" value="株式会社丸紅">
     </div>
-    <div class="row2">
-      <div class="field"><label>担当者名 <span class="req">●</span></label><input id="c_person" type="text"></div>
-      <div class="field"><label>連絡先 <span class="req">●</span></label><input id="c_contact" type="text" placeholder="電話/メール"></div>
-    </div>
+    <div class="field"><label>担当者名 <span class="req">●</span></label><input id="c_person" type="text"></div>
     <div class="field">
       <label>収集運搬業者 <span class="req">●</span></label>
       <button class="picker-btn" id="c_transporterBtn" onclick="openVendorPicker('transporter')">
@@ -352,40 +337,17 @@
     <div class="modal-count" id="vendorCount"></div>
   </div>
   <div class="modal-list" id="vendorList"></div>
-</div>
-
-<!-- ===== 編集モーダル ===== -->
-<div id="editModal" class="center-modal">
-  <div class="center-modal-box">
-    <div class="center-modal-title">申請を編集</div>
-    <div class="center-modal-info" id="editInfo"></div>
-    <div class="field">
-      <label>枚数 <span class="req">●</span></label>
-      <input id="edit_count" type="number" inputmode="numeric">
-    </div>
-    <div class="field">
-      <label>備考</label>
-      <textarea id="edit_note"></textarea>
-    </div>
-    <div class="center-modal-actions">
-      <button class="center-modal-btn cancel" onclick="closeEditModal()">キャンセル</button>
-      <button class="center-modal-btn save" onclick="saveEdit()">保存</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== キャンセル確認モーダル ===== -->
-<div id="cancelModal" class="center-modal">
-  <div class="center-modal-box">
-    <div class="center-modal-title">この申請をキャンセルしますか?</div>
-    <div style="font-size: 12px; color: #64748B; margin-bottom: 12px; line-height: 1.5;">
-      キャンセルすると元に戻せません。<br>
-      事務にキャンセル通知が送信されます。
-    </div>
-    <div class="center-modal-info" id="cancelInfo"></div>
-    <div class="center-modal-actions">
-      <button class="center-modal-btn cancel" onclick="closeCancelModal()">戻る</button>
-      <button class="center-modal-btn delete" onclick="confirmCancel()">キャンセルする</button>
+  <!-- 新規追加エリア(固定で下に表示) -->
+  <div style="padding: 10px 12px; border-top: 1px solid #E2E8F0; flex-shrink: 0;">
+    <div class="new-vendor-box">
+      <button class="new-vendor-toggle" id="newVendorToggle" onclick="toggleNewVendor()">+ 一覧にない業者を追加する</button>
+      <div id="newVendorRow" style="display:none;">
+        <div class="new-vendor-input-row">
+          <input id="newVendorName" type="text" placeholder="業者名を入力">
+          <button onclick="addNewVendor()">追加</button>
+          <button class="cancel" onclick="cancelNewVendor()">×</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -470,13 +432,11 @@ function showNewProjectInput() {
   document.getElementById('c_addProjectBtn').style.display = 'none';
   document.getElementById('c_newProjectName').focus();
 }
-
 function cancelNewProject() {
   document.getElementById('c_newProjectRow').style.display = 'none';
   document.getElementById('c_addProjectBtn').style.display = 'block';
   document.getElementById('c_newProjectName').value = '';
 }
-
 async function addNewProject() {
   const name = document.getElementById('c_newProjectName').value.trim();
   if (!name) { alert('工事名を入力してください'); return; }
@@ -526,7 +486,6 @@ function renderContractWastes() {
     ).join('');
   }
 }
-
 function addContractWaste(name) {
   if (!contractWastes.some(w => w.name === name)) {
     contractWastes.push({ name: name, quantity: '', unit: 't' });
@@ -537,10 +496,12 @@ function removeContractWaste(i) { contractWastes.splice(i, 1); renderContractWas
 function updateContractWasteQty(i, v) { contractWastes[i].quantity = v; }
 function updateContractWasteUnit(i, v) { contractWastes[i].unit = v; }
 
+// ===== 業者選択モーダル =====
 function openVendorPicker(type) {
   currentPickerType = type;
   document.getElementById('vendorModalTitle').textContent = type === 'transporter' ? '収集運搬業者を選択' : '処分業者を選択';
   document.getElementById('vendorSearchInput').value = '';
+  cancelNewVendor();
   document.getElementById('vendorModal').classList.add('active');
   filterVendors();
   setTimeout(() => document.getElementById('vendorSearchInput').focus(), 100);
@@ -572,6 +533,49 @@ function selectVendor(id, name) {
   closeVendorPicker();
 }
 
+// ===== 新規業者追加 =====
+function toggleNewVendor() {
+  const row = document.getElementById('newVendorRow');
+  const toggle = document.getElementById('newVendorToggle');
+  if (row.style.display === 'none') {
+    row.style.display = 'block';
+    toggle.style.display = 'none';
+    setTimeout(() => document.getElementById('newVendorName').focus(), 50);
+  }
+}
+function cancelNewVendor() {
+  document.getElementById('newVendorRow').style.display = 'none';
+  document.getElementById('newVendorToggle').style.display = 'block';
+  document.getElementById('newVendorName').value = '';
+}
+async function addNewVendor() {
+  const name = document.getElementById('newVendorName').value.trim();
+  if (!name) { alert('業者名を入力してください'); return; }
+  const type = currentPickerType === 'transporter' ? '収集運搬' : '処分';
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'addVendorByUser', name: name, type: type })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      // ローカルのリストにも追加
+      const newVendor = { id: data.id, name: data.name };
+      if (type === '収集運搬') allTransporters.unshift(newVendor);
+      else allDisposers.unshift(newVendor);
+      // そのまま選択完了
+      selectVendor(data.id, data.name);
+      if (data.existing) {
+        // 既にあったものを選んだ場合、メッセージは出さない(自然に進めるため)
+      }
+    } else {
+      alert('エラー: ' + data.error);
+    }
+  } catch (e) {
+    alert('通信エラー: ' + e.message);
+  }
+}
+
 async function submitContract() {
   const transId = val('c_transporterId');
   const dispId = val('c_disposerId');
@@ -584,7 +588,7 @@ async function submitContract() {
     applicantName: userProfile ? userProfile.displayName : '不明',
     userId: userProfile ? userProfile.userId : '',
     projectName: projectName, company: val('c_company'),
-    person: val('c_person'), contact: val('c_contact'),
+    person: val('c_person'), contact: '',
     transporterId: transId, transporterName: val('c_transporterName'),
     disposerId: dispId, disposerName: val('c_disposerName'),
     wastes: wastesStr,
@@ -592,7 +596,7 @@ async function submitContract() {
     periodStart: val('c_periodStart'), periodEnd: val('c_periodEnd'),
     note: val('c_note')
   };
-  if (!payload.company || !payload.person || !payload.contact) { alert('必須項目(●)を入力してください'); return; }
+  if (!payload.company || !payload.person) { alert('必須項目(●)を入力してください'); return; }
   const btn = event.target;
   btn.disabled = true; btn.textContent = '送信中...';
   try {
@@ -610,7 +614,7 @@ async function submitContract() {
 function val(id) { return document.getElementById(id).value.trim(); }
 
 function clearContractForm() {
-  ['c_person','c_contact','c_startDate','c_periodStart','c_periodEnd','c_note']
+  ['c_person','c_startDate','c_periodStart','c_periodEnd','c_note']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('c_company').value = '株式会社丸紅';
   document.getElementById('c_projectSelect').value = '';
@@ -783,17 +787,14 @@ function renderHistory() {
     wrap.innerHTML = '<div class="history-empty">まだ申請がありません</div>';
     return;
   }
-  
   wrap.innerHTML = myApplies.map(a => {
     const isEmpty = a.applyType === '空車';
     const isBlank = a.applyType === '白紙';
     const projectTitle = a.projectName || '(工事名なし)';
-    
     let vendorLine = '';
     if (isBlank) vendorLine = '<span style="color:#94A3B8;">白紙申請</span>';
     else if (isEmpty) vendorLine = '<span style="color:#94A3B8;">空車依頼</span>';
     else vendorLine = escapeHtml(a.transporterName) + ' → ' + escapeHtml(a.disposerName);
-    
     return `<div class="history-card">
       <div class="history-head">
         <span class="history-id">${escapeHtml(a.id)}</span>
@@ -806,74 +807,6 @@ function renderHistory() {
       </div>
     </div>`;
   }).join('');
-}
- 
-// 編集モーダル
-let editTargetId = null;
-function openEditModal(a) {
-  editTargetId = a.id;
-  document.getElementById('editInfo').innerHTML = 
-    '<b>' + escapeHtml(a.projectName || '(工事名なし)') + '</b><br>' +
-    '<span style="font-size:11px;">' + escapeHtml(a.id) + ' / ' + escapeHtml(a.applyType || '-') + '</span>';
-  document.getElementById('edit_count').value = a.count || '';
-  document.getElementById('edit_note').value = a.note || '';
-  document.getElementById('editModal').classList.add('active');
-}
-function closeEditModal() { document.getElementById('editModal').classList.remove('active'); editTargetId = null; }
-
-async function saveEdit() {
-  if (!editTargetId) return;
-  const count = document.getElementById('edit_count').value.trim();
-  const note = document.getElementById('edit_note').value.trim();
-  if (!count) { alert('枚数を入力してください'); return; }
-  
-  try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'updateApply',
-        userId: userProfile ? userProfile.userId : '',
-        id: editTargetId, count: count, note: note
-      })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      closeEditModal();
-      alert('✅ 申請を更新しました');
-      openHistory();
-    } else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
-}
-
-// キャンセルモーダル
-let cancelTargetId = null;
-function openCancelModal(a) {
-  cancelTargetId = a.id;
-  document.getElementById('cancelInfo').innerHTML = 
-    '<b>' + escapeHtml(a.projectName || '(工事名なし)') + '</b><br>' +
-    '<span style="font-size:11px;">' + escapeHtml(a.id) + ' / ' + escapeHtml(a.applyType || '-') + '</span>';
-  document.getElementById('cancelModal').classList.add('active');
-}
-function closeCancelModal() { document.getElementById('cancelModal').classList.remove('active'); cancelTargetId = null; }
-
-async function confirmCancel() {
-  if (!cancelTargetId) return;
-  try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'cancelApply',
-        userId: userProfile ? userProfile.userId : '',
-        id: cancelTargetId
-      })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      closeCancelModal();
-      alert('🚫 申請をキャンセルしました');
-      openHistory();
-    } else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
 }
 
 function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
