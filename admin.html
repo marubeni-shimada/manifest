@@ -77,6 +77,7 @@
   td { padding: 9px 12px; vertical-align: middle; }
   .mono { font-family: monospace; font-size: 11px; color: #64748B; }
   .muted { color: #94A3B8; font-style: italic; }
+  .wastes-cell { font-size: 11px; color: #0E7490; line-height: 1.4; max-width: 200px; word-break: break-word; }
   
   .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
   .badge-pending { background: #FAEEDA; color: #854F0B; }
@@ -608,7 +609,8 @@ function renderApplies() {
     filtered = filtered.filter(a => 
       (a.id && a.id.toLowerCase().includes(query)) ||
       (a.projectName && a.projectName.toLowerCase().includes(query)) ||
-      (a.applicantName && a.applicantName.toLowerCase().includes(query))
+      (a.applicantName && a.applicantName.toLowerCase().includes(query)) ||
+      (a.wastes && a.wastes.toLowerCase().includes(query))
     );
   }
   document.getElementById('appliesCount').textContent = filtered.length + ' 件';
@@ -617,9 +619,22 @@ function renderApplies() {
   const rows = filtered.map(a => {
     const isEmptyVehicle = a.contractId === 'EMPTY' || a.applyType === '空車';
     const isBlank = a.applyType === '白紙';
-    const vendorCell = isBlank ? '<span class="muted">白紙</span>'
-      : isEmptyVehicle ? '<span class="muted">空車</span>'
-      : escapeHtml(a.transporterName) + ' → ' + escapeHtml(a.disposerName);
+    const isFree = a.applyType === '自由選択';
+    
+    let vendorCell;
+    if (isBlank) vendorCell = '<span class="muted">白紙</span>';
+    else if (isEmptyVehicle) vendorCell = '<span class="muted">空車</span>';
+    else if (isFree) {
+      const t = a.transporterName ? escapeHtml(a.transporterName) : '<span class="muted">未指定</span>';
+      const d = a.disposerName ? escapeHtml(a.disposerName) : '<span class="muted">未指定</span>';
+      vendorCell = t + ' → ' + d;
+    }
+    else vendorCell = escapeHtml(a.transporterName) + ' → ' + escapeHtml(a.disposerName);
+    
+    const wastesCell = a.wastes 
+      ? `<div class="wastes-cell">${escapeHtml(a.wastes)}</div>`
+      : '<span class="muted">—</span>';
+    
     const badgeClass = a.status === '完了' ? 'badge-done' : a.status === 'キャンセル' ? 'badge-cancel' : 'badge-pending';
     const actionCell = a.status === '申請中'
       ? `<button class="row-action complete" onclick="openCompleteModal('${escapeAttr(a.id)}','${escapeAttr(a.projectName || '(白紙)')}','${escapeAttr(a.applicantName)}')">✓ 完了にする</button>`
@@ -632,12 +647,13 @@ function renderApplies() {
       <td>${escapeHtml(a.applicantName)}</td>
       <td>${escapeHtml(a.count)}</td>
       <td>${vendorCell}</td>
+      <td>${wastesCell}</td>
       <td style="text-align:center;"><span class="badge ${badgeClass}">${escapeHtml(a.status)}</span></td>
       <td style="text-align:right;">${actionCell}</td>
     </tr>`;
   }).join('');
   wrap.innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>申請ID</th><th>申請日時</th><th>区分</th><th>工事名</th><th>申請者</th><th>枚数</th><th>業者</th><th style="text-align:center;">状態</th><th style="text-align:right;">操作</th></tr></thead>
+    <thead><tr><th>申請ID</th><th>申請日時</th><th>区分</th><th>工事名</th><th>申請者</th><th>枚数</th><th>業者</th><th>廃棄物</th><th style="text-align:center;">状態</th><th style="text-align:right;">操作</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -663,7 +679,6 @@ async function confirmComplete() {
     hideLoading();
     if (data.ok) {
       closeCompleteModal();
-      // LINE通知の結果をチェック
       if (data.notifyResult === 'failed') {
         alert('✅ 完了処理は成功しました。\n\n⚠️ ただし、申請者へのLINE通知の送信に失敗しました。\n口頭またはTeamsで「JWNET登録完了」を申請者にお伝えください。');
       }
