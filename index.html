@@ -365,6 +365,7 @@ let allDisposers = [];
 let currentPickerType = null;
 let projectList = [];
 let myApplies = [];
+let vendorsLoadingPromise = null;
 
 async function init() {
   try {
@@ -401,16 +402,25 @@ async function openContractForm() {
   showPage('contract');
   contractWastes = [];
   cancelNewProject();
+  
+  // 業者リストの読み込みPromiseを保持(後で業者ボタンが押されたら待てるように)
+  vendorsLoadingPromise = fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getVendors' }) })
+    .then(res => res.json())
+    .then(vData => {
+      if (vData.ok) {
+        allTransporters = vData.transporters;
+        allDisposers = vData.disposers;
+      }
+    });
+  
+  // 廃棄物と工事は別途並行で読み込み
   try {
-    const [vRes, wRes, pRes] = await Promise.all([
-      fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getVendors' }) }),
+    const [wRes, pRes] = await Promise.all([
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getWastes' }) }),
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getProjects' }) })
     ]);
-    const vData = await vRes.json();
     const wData = await wRes.json();
     const pData = await pRes.json();
-    if (vData.ok) { allTransporters = vData.transporters; allDisposers = vData.disposers; }
     if (wData.ok) { wasteList = wData.wastes; renderContractWastes(); }
     if (pData.ok) { projectList = pData.projects; renderContractProjectOptions(); }
   } catch (e) { console.error(e); }
@@ -497,12 +507,21 @@ function updateContractWasteQty(i, v) { contractWastes[i].quantity = v; }
 function updateContractWasteUnit(i, v) { contractWastes[i].unit = v; }
 
 // ===== 業者選択モーダル =====
-function openVendorPicker(type) {
+async function openVendorPicker(type) {
   currentPickerType = type;
   document.getElementById('vendorModalTitle').textContent = type === 'transporter' ? '収集運搬業者を選択' : '処分業者を選択';
   document.getElementById('vendorSearchInput').value = '';
   cancelNewVendor();
   document.getElementById('vendorModal').classList.add('active');
+  
+  // まだ業者リストが読み込まれていなければ、ローディング表示してから読み込みを待つ
+  const source = type === 'transporter' ? allTransporters : allDisposers;
+  if (source.length === 0 && vendorsLoadingPromise) {
+    document.getElementById('vendorList').innerHTML = '<div class="modal-empty">読み込み中...</div>';
+    document.getElementById('vendorCount').textContent = '';
+    await vendorsLoadingPromise;
+  }
+  
   filterVendors();
   setTimeout(() => document.getElementById('vendorSearchInput').focus(), 100);
 }
