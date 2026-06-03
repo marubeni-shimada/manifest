@@ -79,6 +79,12 @@
   .modal-item:active { background: #F1F5F9; }
   .modal-empty { padding: 30px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   
+  /* 業者リスト + 削除ボタン */
+  .vendor-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .vendor-name { flex: 1; }
+  .vendor-delete-btn { background: transparent; border: 1px solid #FECACA; color: #DC2626; width: 28px; height: 28px; border-radius: 6px; font-size: 14px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-family: inherit; flex-shrink: 0; }
+  .vendor-delete-btn:active { background: #FEF2F2; }
+  
   /* 新規業者追加エリア */
   .new-vendor-box { background: #F0FDFA; border: 1px dashed #0F766E; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
   .new-vendor-toggle { width: 100%; background: transparent; border: none; color: #0F766E; font-size: 13px; font-weight: 600; cursor: pointer; padding: 4px; font-family: inherit; text-align: left; }
@@ -112,6 +118,18 @@
   .history-detail b { color: #0F172A; font-weight: 600; }
   .history-empty { padding: 60px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   .history-loading { padding: 40px; text-align: center; color: #64748B; font-size: 13px; }
+  
+  /* 業者削除確認モーダル */
+  .delete-vendor-modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+  .delete-vendor-modal-bg.active { display: flex; }
+  .delete-vendor-modal-box { background: white; border-radius: 14px; padding: 20px; max-width: 400px; width: 100%; box-shadow: 0 10px 40px rgba(15,23,42,0.2); }
+  .delete-vendor-modal-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+  .delete-vendor-modal-msg { font-size: 12px; color: #64748B; margin-bottom: 14px; line-height: 1.5; }
+  .delete-vendor-modal-target { background: #F8FAFC; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
+  .delete-vendor-modal-actions { display: flex; gap: 8px; }
+  .delete-vendor-modal-btn { flex: 1; padding: 11px; border-radius: 9px; font-size: 14px; cursor: pointer; font-weight: 600; font-family: inherit; }
+  .delete-vendor-modal-btn.cancel { background: white; border: 1px solid #CBD5E1; color: #475569; }
+  .delete-vendor-modal-btn.delete { background: #DC2626; color: white; border: none; }
 </style>
 </head>
 <body>
@@ -352,6 +370,22 @@
   <div class="modal-list" id="vendorList"></div>
 </div>
 
+<!-- ===== 業者削除確認モーダル ===== -->
+<div id="deleteVendorModal" class="delete-vendor-modal-bg">
+  <div class="delete-vendor-modal-box">
+    <div class="delete-vendor-modal-title">この業者を削除しますか?</div>
+    <div class="delete-vendor-modal-msg">
+      自分が追加した業者を削除します。<br>
+      ※過去の契約・申請データには影響しません。
+    </div>
+    <div class="delete-vendor-modal-target" id="deleteVendorTarget"></div>
+    <div class="delete-vendor-modal-actions">
+      <button class="delete-vendor-modal-btn cancel" onclick="closeDeleteVendorConfirm()">戻る</button>
+      <button class="delete-vendor-modal-btn delete" onclick="confirmDeleteVendor()">削除する</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const LIFF_ID = '2009834318-xkka6j2s';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02rDkgXBj2B6289YMhmi7C9lXCKEIbrfXNGW3AU6Qe7L2_jPg/exec';
@@ -538,7 +572,17 @@ function filterVendors() {
     countEl.textContent = '';
   } else {
     countEl.textContent = filtered.length + ' 件';
-    listEl.innerHTML = filtered.map(v => `<div class="modal-item" onclick="selectVendor('${escapeAttr(v.id)}','${escapeAttr(v.name)}')">${escapeHtml(v.name)}</div>`).join('');
+    const myUserId = userProfile ? userProfile.userId : '';
+    listEl.innerHTML = filtered.map(v => {
+      const canDelete = v.addedBy && v.addedBy === myUserId;
+      const deleteBtn = canDelete 
+        ? `<button class="vendor-delete-btn" onclick="event.stopPropagation(); openDeleteVendorConfirm('${escapeAttr(v.id)}','${escapeAttr(v.name)}')">✕</button>`
+        : '';
+      return `<div class="modal-item vendor-item" onclick="selectVendor('${escapeAttr(v.id)}','${escapeAttr(v.name)}')">
+        <span class="vendor-name">${escapeHtml(v.name)}</span>
+        ${deleteBtn}
+      </div>`;
+    }).join('');
   }
 }
 
@@ -571,27 +615,62 @@ async function addNewVendor() {
   const name = document.getElementById('newVendorName').value.trim();
   if (!name) { alert('業者名を入力してください'); return; }
   const type = currentPickerType === 'transporter' ? '収集運搬' : '処分';
+  const myUserId = userProfile ? userProfile.userId : '';
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'addVendorByUser', name: name, type: type })
+      body: JSON.stringify({ action: 'addVendorByUser', name: name, type: type, userId: myUserId })
     });
     const data = await res.json();
     if (data.ok) {
-      // ローカルのリストにも追加
-      const newVendor = { id: data.id, name: data.name };
+      // ローカルのリストにも追加(addedByを記録して、自分が追加したと分かるように)
+      const newVendor = { id: data.id, name: data.name, addedBy: data.existing ? '' : myUserId };
       if (type === '収集運搬') allTransporters.unshift(newVendor);
       else allDisposers.unshift(newVendor);
-      // そのまま選択完了
       selectVendor(data.id, data.name);
-      if (data.existing) {
-        // 既にあったものを選んだ場合、メッセージは出さない(自然に進めるため)
-      }
     } else {
       alert('エラー: ' + data.error);
     }
   } catch (e) {
     alert('通信エラー: ' + e.message);
+  }
+}
+
+// ===== 業者削除 =====
+let vendorToDelete = null;
+function openDeleteVendorConfirm(id, name) {
+  vendorToDelete = { id: id, name: name };
+  document.getElementById('deleteVendorTarget').textContent = name;
+  document.getElementById('deleteVendorModal').classList.add('active');
+}
+function closeDeleteVendorConfirm() {
+  document.getElementById('deleteVendorModal').classList.remove('active');
+  vendorToDelete = null;
+}
+async function confirmDeleteVendor() {
+  if (!vendorToDelete) return;
+  const type = currentPickerType === 'transporter' ? '収集運搬' : '処分';
+  const myUserId = userProfile ? userProfile.userId : '';
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'deleteVendorByUser', id: vendorToDelete.id, type: type, userId: myUserId })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      // ローカルのリストからも削除
+      const targetList = type === '収集運搬' ? allTransporters : allDisposers;
+      const idx = targetList.findIndex(v => v.id === vendorToDelete.id);
+      if (idx !== -1) targetList.splice(idx, 1);
+      closeDeleteVendorConfirm();
+      filterVendors();
+    } else {
+      alert('エラー: ' + data.error);
+      closeDeleteVendorConfirm();
+    }
+  } catch (e) {
+    alert('通信エラー: ' + e.message);
+    closeDeleteVendorConfirm();
   }
 }
 
