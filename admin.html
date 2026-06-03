@@ -131,9 +131,25 @@
   .detail-grid { display: grid; grid-template-columns: 90px 1fr; gap: 6px 12px; font-size: 13px; }
   .detail-label { color: #64748B; font-weight: 600; }
   .detail-value { color: #0F172A; }
+  
+  /* グローバルローディングオーバーレイ */
+  .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner-box { background: white; border-radius: 14px; padding: 24px 28px; display: flex; flex-direction: column; align-items: center; gap: 12px; box-shadow: 0 10px 40px rgba(15, 23, 42, 0.25); min-width: 180px; }
+  .loading-spinner { width: 36px; height: 36px; border: 3px solid #E2E8F0; border-top-color: #0F766E; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .loading-text { font-size: 13px; color: #475569; font-weight: 500; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+<!-- ===== ローディングオーバーレイ ===== -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-spinner-box">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">処理中...</div>
+  </div>
+</div>
 
 <div id="authError" class="auth-error" style="display:none;">
   <div class="icon">🔒</div>
@@ -415,6 +431,15 @@ let allProjects = [];
 let allWastes = [];
 let allVendors = [];
 
+// ===== ローディング表示 =====
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text || '処理中...';
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+
 if (!TOKEN) {
   document.getElementById('authError').style.display = 'block';
 } else {
@@ -631,12 +656,14 @@ async function confirmComplete() {
   if (!completeTargetId) return;
   const operatorName = getOperatorName();
   if (!operatorName) { alert('担当者を選択してください'); return; }
+  showLoading('完了処理中...');
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'completeApply', token: TOKEN, id: completeTargetId, operatorName: operatorName }) });
     const data = await res.json();
+    hideLoading();
     if (data.ok) { closeCompleteModal(); loadApplies(); }
     else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
 // ============================================
@@ -707,15 +734,17 @@ function renderContracts() {
 async function changeContractStatus(id, status) {
   const operatorName = getOperatorName();
   if (!operatorName) { alert('画面右上の「担当者」を選択してください。'); document.getElementById('operatorName').focus(); loadContracts(); return; }
+  showLoading('契約状態を更新中...');
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({ action: 'updateContractStatus', token: TOKEN, id: id, status: status, operatorName: operatorName })
     });
     const data = await res.json();
+    hideLoading();
     if (data.ok) { loadContracts(); }
     else { alert('エラー: ' + data.error); loadContracts(); }
-  } catch (e) { alert('通信エラー: ' + e.message); loadContracts(); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); loadContracts(); }
 }
 
 function openContractDetail(c) {
@@ -816,15 +845,17 @@ async function saveProject() {
   const id = document.getElementById('projectId').value;
   if (!name) { alert('工事名を入力してください'); return; }
   const isEdit = !!id;
+  showLoading(isEdit ? '工事を更新中...' : '工事を追加中...');
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({ action: isEdit ? 'updateProject' : 'addProject', token: TOKEN, id: id, name: name, status: status, note: note, registeredBy: getOperatorName() || '事務' })
     });
     const data = await res.json();
+    hideLoading();
     if (data.ok) { closeProjectModal(); loadProjects(); }
     else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
 let projectToDelete = null;
@@ -836,12 +867,14 @@ function openDeleteProjectModal(id, name) {
 function closeProjectDeleteModal() { document.getElementById('projectDeleteModal').classList.remove('active'); projectToDelete = null; }
 async function confirmDeleteProject() {
   if (!projectToDelete) return;
+  showLoading('工事を削除中...');
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteProject', token: TOKEN, id: projectToDelete }) });
     const data = await res.json();
+    hideLoading();
     if (data.ok) { closeProjectDeleteModal(); loadProjects(); }
     else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
 let projectToFinish = null;
@@ -869,12 +902,14 @@ async function openFinishProjectModal(id, name) {
 function closeProjectFinishModal() { document.getElementById('projectFinishModal').classList.remove('active'); projectToFinish = null; }
 async function confirmFinishProject() {
   if (!projectToFinish) return;
+  showLoading('工事を終了処理中...');
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'finishProject', token: TOKEN, id: projectToFinish }) });
     const data = await res.json();
+    hideLoading();
     if (data.ok) { closeProjectFinishModal(); loadProjects(); }
     else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
 // ============================================
@@ -934,12 +969,14 @@ async function saveWaste() {
   const oldName = document.getElementById('wasteOldName').value;
   if (!name) { alert('名称を入力してください'); return; }
   const isEdit = !!oldName;
+  showLoading(isEdit ? '廃棄物を更新中...' : '廃棄物を追加中...');
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: isEdit ? 'updateWaste' : 'addWaste', token: TOKEN, code: code, name: name, oldName: oldName }) });
     const data = await res.json();
+    hideLoading();
     if (data.ok) { closeWasteModal(); loadWastes(); }
     else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
 let wasteToDelete = null;
@@ -951,12 +988,14 @@ function openDeleteWasteModal(name) {
 function closeWasteDeleteModal() { document.getElementById('wasteDeleteModal').classList.remove('active'); wasteToDelete = null; }
 async function confirmDeleteWaste() {
   if (!wasteToDelete) return;
+  showLoading('廃棄物を削除中...');
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteWaste', token: TOKEN, name: wasteToDelete }) });
     const data = await res.json();
+    hideLoading();
     if (data.ok) { closeWasteDeleteModal(); loadWastes(); }
     else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
 // ============================================
@@ -1039,15 +1078,17 @@ async function saveVendor() {
   const oldType = document.getElementById('vendorOldType').value;
   if (!name) { alert('業者名を入力してください'); return; }
   const isEdit = !!oldType;
+  showLoading(isEdit ? '業者を更新中...' : '業者を追加中...');
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({ action: isEdit ? 'updateVendor' : 'addVendor', token: TOKEN, id: id, type: type, name: name, contact: contact, address: address, note: note, oldId: oldId, oldType: oldType })
     });
     const data = await res.json();
+    hideLoading();
     if (data.ok) { closeVendorModal(); loadVendors(); }
     else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
 let vendorToDelete = null;
@@ -1059,12 +1100,14 @@ function openDeleteVendorModal(id, type, name) {
 function closeVendorDeleteModal() { document.getElementById('vendorDeleteModal').classList.remove('active'); vendorToDelete = null; }
 async function confirmDeleteVendor() {
   if (!vendorToDelete) return;
+  showLoading('業者を削除中...');
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteVendor', token: TOKEN, id: vendorToDelete.id, type: vendorToDelete.type }) });
     const data = await res.json();
+    hideLoading();
     if (data.ok) { closeVendorDeleteModal(); loadVendors(); }
     else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
 function escapeHtml(s) { if (s === null || s === undefined) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
