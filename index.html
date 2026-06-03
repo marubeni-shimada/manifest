@@ -79,13 +79,11 @@
   .modal-item:active { background: #F1F5F9; }
   .modal-empty { padding: 30px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   
-  /* 業者リスト + 削除ボタン */
   .vendor-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .vendor-name { flex: 1; }
   .vendor-delete-btn { background: transparent; border: 1px solid #FECACA; color: #DC2626; width: 28px; height: 28px; border-radius: 6px; font-size: 14px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-family: inherit; flex-shrink: 0; }
   .vendor-delete-btn:active { background: #FEF2F2; }
   
-  /* 新規業者追加エリア */
   .new-vendor-box { background: #F0FDFA; border: 1px dashed #0F766E; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
   .new-vendor-toggle { width: 100%; background: transparent; border: none; color: #0F766E; font-size: 13px; font-weight: 600; cursor: pointer; padding: 4px; font-family: inherit; text-align: left; }
   .new-vendor-input-row { display: flex; gap: 6px; margin-top: 8px; }
@@ -108,7 +106,6 @@
   .new-project-row button { padding: 0 16px; background: #0F766E; color: white; border: none; border-radius: 9px; font-size: 13px; cursor: pointer; font-weight: 600; white-space: nowrap; }
   .new-project-row button.cancel { background: #E2E8F0; color: #475569; }
   
-  /* 申請履歴 */
   .history-card { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
   .history-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px; flex-wrap: wrap; }
   .history-id { font-family: monospace; font-size: 10px; color: #94A3B8; }
@@ -119,7 +116,6 @@
   .history-empty { padding: 60px 20px; text-align: center; color: #94A3B8; font-size: 13px; }
   .history-loading { padding: 40px; text-align: center; color: #64748B; font-size: 13px; }
   
-  /* 業者削除確認モーダル */
   .delete-vendor-modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
   .delete-vendor-modal-bg.active { display: flex; }
   .delete-vendor-modal-box { background: white; border-radius: 14px; padding: 20px; max-width: 400px; width: 100%; box-shadow: 0 10px 40px rgba(15,23,42,0.2); }
@@ -130,9 +126,25 @@
   .delete-vendor-modal-btn { flex: 1; padding: 11px; border-radius: 9px; font-size: 14px; cursor: pointer; font-weight: 600; font-family: inherit; }
   .delete-vendor-modal-btn.cancel { background: white; border: 1px solid #CBD5E1; color: #475569; }
   .delete-vendor-modal-btn.delete { background: #DC2626; color: white; border: none; }
+  
+  /* グローバルローディングオーバーレイ */
+  .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner-box { background: white; border-radius: 14px; padding: 24px 28px; display: flex; flex-direction: column; align-items: center; gap: 12px; box-shadow: 0 10px 40px rgba(15, 23, 42, 0.25); min-width: 180px; }
+  .loading-spinner { width: 36px; height: 36px; border: 3px solid #E2E8F0; border-top-color: #0F766E; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .loading-text { font-size: 13px; color: #475569; font-weight: 500; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+<!-- ===== ローディングオーバーレイ ===== -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-spinner-box">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">処理中...</div>
+  </div>
+</div>
 
 <!-- ===== メニュー画面 ===== -->
 <div id="page-menu" class="page active">
@@ -354,7 +366,6 @@
     </div>
     <div class="modal-count" id="vendorCount"></div>
   </div>
-  <!-- 新規追加エリア(検索の下、リストの上に表示) -->
   <div style="padding: 10px 12px; border-bottom: 1px solid #E2E8F0; flex-shrink: 0;">
     <div class="new-vendor-box">
       <button class="new-vendor-toggle" id="newVendorToggle" onclick="toggleNewVendor()">+ 一覧にない業者を追加する</button>
@@ -401,6 +412,15 @@ let projectList = [];
 let myApplies = [];
 let vendorsLoadingPromise = null;
 
+// ===== ローディング表示 =====
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text || '処理中...';
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+
 async function init() {
   try {
     await liff.init({ liffId: LIFF_ID });
@@ -437,7 +457,6 @@ async function openContractForm() {
   contractWastes = [];
   cancelNewProject();
   
-  // 業者リストの読み込みPromiseを保持(後で業者ボタンが押されたら待てるように)
   vendorsLoadingPromise = fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getVendors' }) })
     .then(res => res.json())
     .then(vData => {
@@ -447,7 +466,6 @@ async function openContractForm() {
       }
     });
   
-  // 廃棄物と工事は別途並行で読み込み
   try {
     const [wRes, pRes] = await Promise.all([
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getWastes' }) }),
@@ -484,12 +502,14 @@ function cancelNewProject() {
 async function addNewProject() {
   const name = document.getElementById('c_newProjectName').value.trim();
   if (!name) { alert('工事名を入力してください'); return; }
+  showLoading('工事を追加中...');
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({ action: 'addProject', byUser: true, name: name, registeredBy: userProfile ? userProfile.displayName : '現場' })
     });
     const data = await res.json();
+    hideLoading();
     if (data.ok) {
       projectList.push({ id: data.id, name: name, status: '進行中' });
       renderContractProjectOptions();
@@ -500,7 +520,7 @@ async function addNewProject() {
       cancelNewProject();
       alert('その工事は既に登録されています。選択しました。');
     } else { alert('エラー: ' + data.error); }
-  } catch (e) { alert('通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
 function renderContractWastes() {
@@ -548,7 +568,6 @@ async function openVendorPicker(type) {
   cancelNewVendor();
   document.getElementById('vendorModal').classList.add('active');
   
-  // まだ業者リストが読み込まれていなければ、ローディング表示してから読み込みを待つ
   const source = type === 'transporter' ? allTransporters : allDisposers;
   if (source.length === 0 && vendorsLoadingPromise) {
     document.getElementById('vendorList').innerHTML = '<div class="modal-empty">読み込み中...</div>';
@@ -616,14 +635,15 @@ async function addNewVendor() {
   if (!name) { alert('業者名を入力してください'); return; }
   const type = currentPickerType === 'transporter' ? '収集運搬' : '処分';
   const myUserId = userProfile ? userProfile.userId : '';
+  showLoading('業者を追加中...');
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({ action: 'addVendorByUser', name: name, type: type, userId: myUserId })
     });
     const data = await res.json();
+    hideLoading();
     if (data.ok) {
-      // ローカルのリストにも追加(addedByを記録して、自分が追加したと分かるように)
       const newVendor = { id: data.id, name: data.name, addedBy: data.existing ? '' : myUserId };
       if (type === '収集運搬') allTransporters.unshift(newVendor);
       else allDisposers.unshift(newVendor);
@@ -632,6 +652,7 @@ async function addNewVendor() {
       alert('エラー: ' + data.error);
     }
   } catch (e) {
+    hideLoading();
     alert('通信エラー: ' + e.message);
   }
 }
@@ -651,14 +672,15 @@ async function confirmDeleteVendor() {
   if (!vendorToDelete) return;
   const type = currentPickerType === 'transporter' ? '収集運搬' : '処分';
   const myUserId = userProfile ? userProfile.userId : '';
+  showLoading('業者を削除中...');
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({ action: 'deleteVendorByUser', id: vendorToDelete.id, type: type, userId: myUserId })
     });
     const data = await res.json();
+    hideLoading();
     if (data.ok) {
-      // ローカルのリストからも削除
       const targetList = type === '収集運搬' ? allTransporters : allDisposers;
       const idx = targetList.findIndex(v => v.id === vendorToDelete.id);
       if (idx !== -1) targetList.splice(idx, 1);
@@ -669,6 +691,7 @@ async function confirmDeleteVendor() {
       closeDeleteVendorConfirm();
     }
   } catch (e) {
+    hideLoading();
     alert('通信エラー: ' + e.message);
     closeDeleteVendorConfirm();
   }
@@ -697,15 +720,17 @@ async function submitContract() {
   if (!payload.company || !payload.person) { alert('必須項目(●)を入力してください'); return; }
   const btn = event.target;
   btn.disabled = true; btn.textContent = '送信中...';
+  showLoading('契約依頼を送信中...');
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
+    hideLoading();
     if (data.ok) {
       alert('✅ 契約依頼を送信しました\n依頼ID: ' + data.id);
       clearContractForm();
       showPage('menu');
     } else { alert('❌ 送信失敗: ' + data.error); }
-  } catch (e) { alert('❌ 通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('❌ 通信エラー: ' + e.message); }
   btn.disabled = false; btn.textContent = '送信する';
 }
 
@@ -847,14 +872,16 @@ async function submitApplyBlank() {
 
 async function sendApply(payload, btn) {
   btn.disabled = true; btn.textContent = '送信中...';
+  showLoading('申請を送信中...');
   try {
     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
+    hideLoading();
     if (data.ok) {
       alert('✅ マニフェスト申請を送信しました\n申請ID: ' + data.id);
       showPage('menu');
     } else { alert('❌ 送信失敗: ' + data.error); }
-  } catch (e) { alert('❌ 通信エラー: ' + e.message); }
+  } catch (e) { hideLoading(); alert('❌ 通信エラー: ' + e.message); }
   btn.disabled = false; btn.textContent = '申請を送信';
 }
 
