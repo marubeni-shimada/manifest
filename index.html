@@ -26,6 +26,7 @@
   .icon-green { background: linear-gradient(135deg, #06C755 0%, #0F766E 100%); }
   .icon-blue { background: linear-gradient(135deg, #0EA5E9 0%, #0E7490 100%); }
   .icon-orange { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+  .icon-purple { background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); }
   .icon-gray { background: linear-gradient(135deg, #64748B 0%, #475569 100%); }
   .menu-btn .text { flex: 1; }
   .menu-btn .title { font-size: 14px; font-weight: 600; color: #0F172A; }
@@ -39,6 +40,7 @@
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 6px; letter-spacing: 0.5px; }
   .req { color: #DC2626; font-size: 8px; vertical-align: middle; }
+  .opt { color: #94A3B8; font-size: 10px; font-weight: 500; margin-left: 4px; }
   input, textarea, select { width: 100%; padding: 11px 13px; border: 1px solid #CBD5E1; border-radius: 9px; font-size: 14px; font-family: inherit; background: white; color: #0F172A; }
   input:focus, textarea:focus, select:focus { outline: none; border-color: #0F766E; box-shadow: 0 0 0 3px rgba(15,118,110,0.12); }
   textarea { min-height: 75px; resize: vertical; }
@@ -63,6 +65,7 @@
   .picker-btn.has-value { background: #ECFEFF; border: 1.5px solid #0F766E; color: #0E7490; font-weight: 500; }
   .picker-btn .icon { color: #94A3B8; font-size: 14px; }
   .picker-btn.has-value .icon { color: #0F766E; font-size: 12px; font-weight: 600; }
+  .picker-clear { background: transparent; border: none; color: #94A3B8; font-size: 11px; cursor: pointer; padding: 4px 8px; margin-top: 4px; font-family: inherit; text-decoration: underline; }
   
   .modal { display: none; position: fixed; inset: 0; background: white; z-index: 100; flex-direction: column; }
   .modal.active { display: flex; }
@@ -207,6 +210,14 @@
       </div>
       <div class="arrow">›</div>
     </button>
+    <button class="menu-btn" onclick="openApplyFormFree()">
+      <div class="icon-box icon-purple">🎯</div>
+      <div class="text">
+        <div class="title">自由選択で申請</div>
+        <div class="desc">工事名・業者・廃棄物を自由に指定</div>
+      </div>
+      <div class="arrow">›</div>
+    </button>
     <button class="menu-btn" onclick="openApplyFormEmpty()">
       <div class="icon-box icon-orange">🚛</div>
       <div class="text">
@@ -255,7 +266,7 @@
     <div class="field"><label>担当者名 <span class="req">●</span></label><input id="c_person" type="text"></div>
     <div class="field">
       <label>収集運搬業者 <span class="req">●</span></label>
-      <button class="picker-btn" id="c_transporterBtn" onclick="openVendorPicker('transporter')">
+      <button class="picker-btn" id="c_transporterBtn" onclick="openVendorPicker('transporter','c')">
         <span id="c_transporterLabel">タップして選択</span>
         <span class="icon">🔍</span>
       </button>
@@ -263,7 +274,7 @@
     </div>
     <div class="field">
       <label>処分業者 <span class="req">●</span></label>
-      <button class="picker-btn" id="c_disposerBtn" onclick="openVendorPicker('disposer')">
+      <button class="picker-btn" id="c_disposerBtn" onclick="openVendorPicker('disposer','c')">
         <span id="c_disposerLabel">タップして選択</span>
         <span class="icon">🔍</span>
       </button>
@@ -306,6 +317,52 @@
     <div class="field"><label>枚数 <span class="req">●</span></label><input id="a_count" type="number" inputmode="numeric" placeholder="例:5"></div>
     <div class="field"><label>備考</label><textarea id="a_note"></textarea></div>
     <button class="submit" onclick="submitApply()">申請を送信</button>
+  </div>
+</div>
+
+<!-- ===== 自由選択で申請 ===== -->
+<div id="page-applyFree" class="page">
+  <div class="header">
+    <button class="back-btn" onclick="showPage('applyMenu')">‹</button>
+    <div><div class="eyebrow">FREE SELECT</div><h1>自由選択で申請</h1></div>
+  </div>
+  <div class="content">
+    <div class="info-box" style="margin-bottom: 16px;">
+      <div style="font-size: 12px; color: #0E7490;">工事名と枚数は必須、その他の項目は<strong>任意</strong>です。空のままでも申請できます。</div>
+    </div>
+    <div class="field">
+      <label>工事名 <span class="req">●</span></label>
+      <select id="f_project"><option value="">読み込み中...</option></select>
+    </div>
+    <div class="field">
+      <label>収集運搬業者 <span class="opt">(任意)</span></label>
+      <button class="picker-btn" id="f_transporterBtn" onclick="openVendorPicker('transporter','f')">
+        <span id="f_transporterLabel">タップして選択</span>
+        <span class="icon">🔍</span>
+      </button>
+      <input type="hidden" id="f_transporterId"><input type="hidden" id="f_transporterName">
+      <button class="picker-clear" id="f_transporterClear" onclick="clearVendor('f','transporter')" style="display:none;">✕ クリア</button>
+    </div>
+    <div class="field">
+      <label>処分業者 <span class="opt">(任意)</span></label>
+      <button class="picker-btn" id="f_disposerBtn" onclick="openVendorPicker('disposer','f')">
+        <span id="f_disposerLabel">タップして選択</span>
+        <span class="icon">🔍</span>
+      </button>
+      <input type="hidden" id="f_disposerId"><input type="hidden" id="f_disposerName">
+      <button class="picker-clear" id="f_disposerClear" onclick="clearVendor('f','disposer')" style="display:none;">✕ クリア</button>
+    </div>
+    <div class="field">
+      <label>廃棄物の種類と数量 <span class="opt">(任意)</span></label>
+      <div class="waste-box">
+        <div id="f_wasteSelected"><div class="waste-empty">下の種類をタップして追加してください</div></div>
+        <div class="waste-divider">追加できる種類</div>
+        <div class="waste-add-row" id="f_wasteAvailable">読み込み中...</div>
+      </div>
+    </div>
+    <div class="field"><label>枚数 <span class="req">●</span></label><input id="f_count" type="number" inputmode="numeric" placeholder="例:5"></div>
+    <div class="field"><label>備考 <span class="opt">(任意)</span></label><textarea id="f_note"></textarea></div>
+    <button class="submit" onclick="submitApplyFree()">申請を送信</button>
   </div>
 </div>
 
@@ -404,13 +461,16 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycby_uAfCcsJ07es9YU46Z02r
 let userProfile = null;
 let myContracts = [];
 let wasteList = [];
-let contractWastes = [];
+let contractWastes = [];  // 契約フォーム用
+let freeWastes = [];       // 自由選択フォーム用
 let allTransporters = [];
 let allDisposers = [];
-let currentPickerType = null;
+let currentPickerType = null;   // 'transporter' / 'disposer'
+let currentPickerForm = null;   // 'c'(契約)/ 'f'(自由選択)
 let projectList = [];
 let myApplies = [];
 let vendorsLoadingPromise = null;
+let mastersLoadingPromise = null;  // 廃棄物+工事マスタの一括読み込みPromise
 
 // ===== ローディング表示 =====
 function showLoading(text) {
@@ -451,12 +511,9 @@ function showPage(name) {
   window.scrollTo(0, 0);
 }
 
-// ===== 契約フォーム =====
-async function openContractForm() {
-  showPage('contract');
-  contractWastes = [];
-  cancelNewProject();
-  
+// ===== マスタの一括読み込み(業者・廃棄物・工事を1回でロード) =====
+function loadVendorsIfNeeded() {
+  if (vendorsLoadingPromise) return vendorsLoadingPromise;
   vendorsLoadingPromise = fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getVendors' }) })
     .then(res => res.json())
     .then(vData => {
@@ -465,16 +522,33 @@ async function openContractForm() {
         allDisposers = vData.disposers;
       }
     });
+  return vendorsLoadingPromise;
+}
+
+function loadMastersIfNeeded() {
+  if (mastersLoadingPromise) return mastersLoadingPromise;
+  mastersLoadingPromise = Promise.all([
+    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getWastes' }) }).then(r => r.json()),
+    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getProjects' }) }).then(r => r.json())
+  ]).then(([wData, pData]) => {
+    if (wData.ok) wasteList = wData.wastes;
+    if (pData.ok) projectList = pData.projects;
+  });
+  return mastersLoadingPromise;
+}
+
+// ===== 契約フォーム =====
+async function openContractForm() {
+  showPage('contract');
+  contractWastes = [];
+  cancelNewProject();
+  
+  loadVendorsIfNeeded();
   
   try {
-    const [wRes, pRes] = await Promise.all([
-      fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getWastes' }) }),
-      fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getProjects' }) })
-    ]);
-    const wData = await wRes.json();
-    const pData = await pRes.json();
-    if (wData.ok) { wasteList = wData.wastes; renderContractWastes(); }
-    if (pData.ok) { projectList = pData.projects; renderContractProjectOptions(); }
+    await loadMastersIfNeeded();
+    renderContractWastes();
+    renderContractProjectOptions();
   } catch (e) { console.error(e); }
 }
 
@@ -523,46 +597,61 @@ async function addNewProject() {
   } catch (e) { hideLoading(); alert('通信エラー: ' + e.message); }
 }
 
-function renderContractWastes() {
-  const selectedEl = document.getElementById('c_wasteSelected');
-  const availableEl = document.getElementById('c_wasteAvailable');
-  if (contractWastes.length === 0) {
+// ===== 廃棄物UI(共通化) =====
+// formType: 'c'(契約)/ 'f'(自由選択)
+function getWasteArray(formType) {
+  return formType === 'c' ? contractWastes : freeWastes;
+}
+function renderWastes(formType) {
+  const list = getWasteArray(formType);
+  const selectedEl = document.getElementById(formType + '_wasteSelected');
+  const availableEl = document.getElementById(formType + '_wasteAvailable');
+  if (list.length === 0) {
     selectedEl.innerHTML = '<div class="waste-empty">下の種類をタップして追加してください</div>';
   } else {
-    selectedEl.innerHTML = contractWastes.map((w, i) => `
+    selectedEl.innerHTML = list.map((w, i) => `
       <div class="waste-card">
         <div class="waste-card-name">📦 ${escapeHtml(w.name)}</div>
-        <input type="number" inputmode="decimal" placeholder="数量" value="${w.quantity || ''}" oninput="updateContractWasteQty(${i}, this.value)">
-        <select onchange="updateContractWasteUnit(${i}, this.value)">
+        <input type="number" inputmode="decimal" placeholder="数量" value="${w.quantity || ''}" oninput="updateWasteQty('${formType}', ${i}, this.value)">
+        <select onchange="updateWasteUnit('${formType}', ${i}, this.value)">
           <option value="t" ${w.unit === 't' ? 'selected' : ''}>t</option>
           <option value="m³" ${w.unit === 'm³' ? 'selected' : ''}>m³</option>
         </select>
-        <span class="waste-card-remove" onclick="removeContractWaste(${i})">✕</span>
+        <span class="waste-card-remove" onclick="removeWaste('${formType}', ${i})">✕</span>
       </div>
     `).join('');
   }
-  const available = wasteList.filter(w => !contractWastes.some(cw => cw.name === w.name));
+  const available = wasteList.filter(w => !list.some(cw => cw.name === w.name));
   if (available.length === 0) {
     availableEl.innerHTML = '<div class="waste-empty">すべて選択済み</div>';
   } else {
     availableEl.innerHTML = available.map(w => 
-      `<span class="waste-add-chip" onclick="addContractWaste('${escapeAttr(w.name)}')">+ ${escapeHtml(w.name)}</span>`
+      `<span class="waste-add-chip" onclick="addWaste('${formType}', '${escapeAttr(w.name)}')">+ ${escapeHtml(w.name)}</span>`
     ).join('');
   }
 }
-function addContractWaste(name) {
-  if (!contractWastes.some(w => w.name === name)) {
-    contractWastes.push({ name: name, quantity: '', unit: 't' });
-    renderContractWastes();
+function addWaste(formType, name) {
+  const list = getWasteArray(formType);
+  if (!list.some(w => w.name === name)) {
+    list.push({ name: name, quantity: '', unit: 't' });
+    renderWastes(formType);
   }
 }
-function removeContractWaste(i) { contractWastes.splice(i, 1); renderContractWastes(); }
-function updateContractWasteQty(i, v) { contractWastes[i].quantity = v; }
-function updateContractWasteUnit(i, v) { contractWastes[i].unit = v; }
+function removeWaste(formType, i) { getWasteArray(formType).splice(i, 1); renderWastes(formType); }
+function updateWasteQty(formType, i, v) { getWasteArray(formType)[i].quantity = v; }
+function updateWasteUnit(formType, i, v) { getWasteArray(formType)[i].unit = v; }
+
+// 旧名互換(契約フォームのHTMLから呼ばれる名前を残す)
+function renderContractWastes() { renderWastes('c'); }
+function addContractWaste(name) { addWaste('c', name); }
+function removeContractWaste(i) { removeWaste('c', i); }
+function updateContractWasteQty(i, v) { updateWasteQty('c', i, v); }
+function updateContractWasteUnit(i, v) { updateWasteUnit('c', i, v); }
 
 // ===== 業者選択モーダル =====
-async function openVendorPicker(type) {
+async function openVendorPicker(type, formType) {
   currentPickerType = type;
+  currentPickerForm = formType;
   document.getElementById('vendorModalTitle').textContent = type === 'transporter' ? '収集運搬業者を選択' : '処分業者を選択';
   document.getElementById('vendorSearchInput').value = '';
   cancelNewVendor();
@@ -606,13 +695,28 @@ function filterVendors() {
 }
 
 function selectVendor(id, name) {
-  const prefix = currentPickerType === 'transporter' ? 'c_transporter' : 'c_disposer';
+  const prefix = currentPickerForm + '_' + (currentPickerType === 'transporter' ? 'transporter' : 'disposer');
   document.getElementById(prefix + 'Id').value = id;
   document.getElementById(prefix + 'Name').value = name;
   document.getElementById(prefix + 'Label').textContent = name;
   document.getElementById(prefix + 'Btn').classList.add('has-value');
   document.querySelector('#' + prefix + 'Btn .icon').textContent = '変更';
+  // 自由選択フォームのときはクリアボタンを表示
+  if (currentPickerForm === 'f') {
+    document.getElementById(prefix + 'Clear').style.display = 'inline-block';
+  }
   closeVendorPicker();
+}
+
+// 業者選択をクリア(自由選択フォーム専用)
+function clearVendor(formType, type) {
+  const prefix = formType + '_' + type;
+  document.getElementById(prefix + 'Id').value = '';
+  document.getElementById(prefix + 'Name').value = '';
+  document.getElementById(prefix + 'Label').textContent = 'タップして選択';
+  document.getElementById(prefix + 'Btn').classList.remove('has-value');
+  document.querySelector('#' + prefix + 'Btn .icon').textContent = '🔍';
+  document.getElementById(prefix + 'Clear').style.display = 'none';
 }
 
 // ===== 新規業者追加 =====
@@ -825,6 +929,61 @@ async function submitApply() {
   }, event.target);
 }
 
+// ===== 自由選択で申請 =====
+async function openApplyFormFree() {
+  showPage('applyFree');
+  freeWastes = [];
+  // 業者・マスタの読み込み開始
+  loadVendorsIfNeeded();
+  
+  // 入力値をリセット
+  document.getElementById('f_count').value = '';
+  document.getElementById('f_note').value = '';
+  clearVendor('f', 'transporter');
+  clearVendor('f', 'disposer');
+  
+  // 工事プルダウンを読み込み
+  const select = document.getElementById('f_project');
+  select.innerHTML = '<option value="">読み込み中...</option>';
+  
+  try {
+    await loadMastersIfNeeded();
+    // 工事プルダウン(進行中のみ)
+    const active = projectList.filter(p => p.status === '進行中').map(p => p.name).sort();
+    if (active.length > 0) {
+      select.innerHTML = '<option value="">選択してください</option>' +
+        active.map(p => `<option value="${escapeAttr(p)}">${escapeHtml(p)}</option>`).join('');
+    } else {
+      select.innerHTML = '<option value="">登録された工事がありません</option>';
+    }
+    // 廃棄物の選択肢を表示
+    renderWastes('f');
+  } catch (e) {
+    select.innerHTML = '<option value="">読み込みエラー</option>';
+  }
+}
+
+async function submitApplyFree() {
+  const projectName = val('f_project');
+  const count = val('f_count');
+  if (!projectName) { alert('工事を選択してください'); return; }
+  if (!count) { alert('枚数を入力してください'); return; }
+  
+  const wastesStr = freeWastes.filter(w => w.name).map(w => `${w.name}:${w.quantity || ''}${w.unit || ''}`).join(', ');
+  
+  await sendApply({
+    action: 'submitApply', applyType: '自由選択',
+    applicantName: userProfile ? userProfile.displayName : '不明',
+    userId: userProfile ? userProfile.userId : '',
+    projectName: projectName,
+    transporterName: val('f_transporterName'),
+    disposerName: val('f_disposerName'),
+    wastes: wastesStr,
+    count: count,
+    note: val('f_note')
+  }, event.target);
+}
+
 // ===== ② 空車 =====
 async function openApplyFormEmpty() {
   showPage('applyEmpty');
@@ -923,11 +1082,20 @@ function renderHistory() {
   wrap.innerHTML = myApplies.map(a => {
     const isEmpty = a.applyType === '空車';
     const isBlank = a.applyType === '白紙';
+    const isFree = a.applyType === '自由選択';
     const projectTitle = a.projectName || '(工事名なし)';
     let vendorLine = '';
     if (isBlank) vendorLine = '<span style="color:#94A3B8;">白紙申請</span>';
     else if (isEmpty) vendorLine = '<span style="color:#94A3B8;">空車依頼</span>';
+    else if (isFree) {
+      const t = a.transporterName ? escapeHtml(a.transporterName) : '<span style="color:#94A3B8;">未指定</span>';
+      const d = a.disposerName ? escapeHtml(a.disposerName) : '<span style="color:#94A3B8;">未指定</span>';
+      vendorLine = t + ' → ' + d;
+    }
     else vendorLine = escapeHtml(a.transporterName) + ' → ' + escapeHtml(a.disposerName);
+    
+    const wastesLine = a.wastes ? '<br><b>廃棄物:</b> ' + escapeHtml(a.wastes) : '';
+    
     return `<div class="history-card">
       <div class="history-head">
         <span class="history-id">${escapeHtml(a.id)}</span>
@@ -935,7 +1103,7 @@ function renderHistory() {
       <div class="history-meta">${escapeHtml(a.submittedAt)} ・ ${escapeHtml(a.applyType || '-')}</div>
       <div class="history-title">${escapeHtml(projectTitle)}</div>
       <div class="history-detail">
-        <b>枚数:</b> ${escapeHtml(a.count)} ・ ${vendorLine}<br>
+        <b>枚数:</b> ${escapeHtml(a.count)} ・ ${vendorLine}${wastesLine}<br>
         ${a.note ? '<b>備考:</b> ' + escapeHtml(a.note) : ''}
       </div>
     </div>`;
