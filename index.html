@@ -726,7 +726,11 @@ async function submitContract() {
     const data = await res.json();
     hideLoading();
     if (data.ok) {
-      alert('✅ 契約依頼を送信しました\n依頼ID: ' + data.id);
+      let msg = '✅ 契約依頼を送信しました\n依頼ID: ' + data.id;
+      if (data.notifyResult === 'failed') {
+        msg += '\n\n⚠️ ただし、事務へのLINE通知の送信に失敗しました。\nお手数ですが、口頭で依頼を伝えてください。';
+      }
+      alert(msg);
       clearContractForm();
       showPage('menu');
     } else { alert('❌ 送信失敗: ' + data.error); }
@@ -878,7 +882,11 @@ async function sendApply(payload, btn) {
     const data = await res.json();
     hideLoading();
     if (data.ok) {
-      alert('✅ マニフェスト申請を送信しました\n申請ID: ' + data.id);
+      let msg = '✅ マニフェスト申請を送信しました\n申請ID: ' + data.id;
+      if (data.notifyResult === 'failed') {
+        msg += '\n\n⚠️ ただし、事務へのLINE通知の送信に失敗しました。\nお手数ですが、口頭で申請を伝えてください。';
+      }
+      alert(msg);
       showPage('menu');
     } else { alert('❌ 送信失敗: ' + data.error); }
   } catch (e) { hideLoading(); alert('❌ 通信エラー: ' + e.message); }
